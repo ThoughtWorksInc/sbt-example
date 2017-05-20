@@ -80,165 +80,162 @@ final class example(files: String*) extends StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     val q"new $annoationName(..$fileAsts)" = this.asInstanceOf[Tree]
     val q"class $specClassName" = defn.asInstanceOf[Tree]
-    q"""class $specClassName extends _root_.org.scalatest.FreeSpec {
-    ..${fileAsts.flatMap {
-      case Lit.String(fileName: String) =>
-        // Workaround for https://github.com/scalameta/scalameta/issues/874
-        val Success(source) = (Input.File(fileName), dialects.ParadiseTypelevel212).parse[Source]
-        val comments = AssociatedComments(source)
+    val result = q"""class $specClassName extends _root_.org.scalatest.FreeSpec {
+    ..${fileAsts.flatMap { fileAst =>
+      val Lit.String(fileName) = fileAst
+      // Workaround for https://github.com/scalameta/scalameta/issues/874
+      val Success(source) = (Input.File(fileName), dialects.ParadiseTypelevel212).parse[Source]
+      val comments = AssociatedComments(source)
 
-        def scaladocTestTree(leadingComments: Set[Token.Comment]): List[Stat] = {
-          leadingComments.toList.flatMap { comment =>
-            ScaladocParser.parseScaladoc(comment) match {
-              case None => Nil
-              case Some(scaladoc) =>
-                val (code, trailing, otherTags) =
-                  scaladoc.foldRight[(List[Stat], List[Stat], List[Stat])]((Nil, Nil, Nil)) {
-                    case (DocToken(DocToken.CodeBlock, None, Some(codeBlock)),
-                          (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
-                      val Success(Block(stats)) = ("{" + codeBlock + "}").parse[Stat]
-                      (stats ++: codeAccumulator, trailingAccumulator, tagAccumulator)
-                    case (DocToken(tagKind: DocToken.TagKind, Some(name), Some(description)),
-                          (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
-                      val tag = if (codeAccumulator.nonEmpty) {
-                        q"""
-                          ${Lit.String(s"${tagKind.label} $name")}.in(try {
-                            this.markup($description)
-                            ..$codeAccumulator
-                          } finally {
-                            ..$trailingAccumulator
-                          })
-                        """
-                      } else {
-                        q"""
-                          ${Lit.String(s"${tagKind.label} $name")} - {
-                            this.markup($description)
-                            ..$trailingAccumulator
-                          }
-                        """
-                      }
-                      (Nil, Nil, tag :: tagAccumulator)
-                    case (DocToken(tagKind: DocToken.TagKind, None, Some(body)),
-                          (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
-                      val tag = if (codeAccumulator.nonEmpty) {
-                        q"""
-                          ${Lit.String(s"${tagKind.label} $body")}.in(try {
-                             ..$codeAccumulator
-                          } finally {
-                            ..$trailingAccumulator
-                          })
-                        """
-                      } else {
-                        q"""
-                          ${Lit.String(s"${tagKind.label} $body")} - {
-                            ..$trailingAccumulator
-                          }
-                        """
-                      }
-                      (Nil, Nil, tag :: tagAccumulator)
-                    case (DocToken(tagKind: DocToken.TagKind, name, body),
-                          (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
-                      val tag = if (codeAccumulator.nonEmpty) {
-                        q"""
-                          ${Lit.String(tagKind.label)}.-(try {
-                             ..$codeAccumulator
-                          } finally {
-                            ..$trailingAccumulator
-                          })
-                        """
-                      } else {
-                        q"""
-                          ${Lit.String(tagKind.label)} - {
-                            ..$trailingAccumulator
-                          }
-                        """
-                      }
-                      (Nil, Nil, tag :: tagAccumulator)
-                    case (DocToken(DocToken.Paragraph, None, None), accumulators) =>
-                      accumulators
-                    case (otherToken, (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
-                      val tokenXml = otherToken match {
-                        case DocToken(DocToken.InheritDoc, None, None) =>
-                          "@inheritdoc"
-                        case DocToken(DocToken.Paragraph, None, Some(text)) =>
-                          <p>{text}</p>
-                        case DocToken(DocToken.Heading, None, Some(text)) =>
-                          <h3>{text}</h3>
-                        case DocToken(DocToken.SubHeading, None, Some(text)) =>
-                          <h4>{text}</h4>
-                        case DocToken(DocToken.Description, None, Some(text)) =>
-                          text
-                        case _ =>
-                          otherToken
-                      }
-                      val markup = q"this.markup(${tokenXml.toString})"
-                      if (codeAccumulator.nonEmpty) {
-                        (markup :: codeAccumulator, trailingAccumulator, tagAccumulator)
-                      } else {
-                        (codeAccumulator, markup :: trailingAccumulator, tagAccumulator)
-                      }
-                  }
-                code ::: trailing ::: otherTags
+      def scaladocTestTree(leadingComments: Set[Token.Comment]): List[Stat] = {
+        leadingComments.toList.flatMap { comment =>
+          ScaladocParser.parseScaladoc(comment).toSeq.flatMap { scaladoc =>
+            val (code, trailing, tags) = scaladoc.foldRight[(List[Stat], List[Stat], List[Stat])]((Nil, Nil, Nil)) {
+              case (DocToken(DocToken.CodeBlock, None, Some(codeBlock)),
+                    (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
+                val Success(Block(stats)) = ("{" + codeBlock + "}").parse[Stat]
+                (stats ++: codeAccumulator, trailingAccumulator, tagAccumulator)
+              case (DocToken(tagKind: DocToken.TagKind, Some(name), Some(description)),
+                    (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
+                val tag = if (codeAccumulator.nonEmpty) {
+                  q"""
+                    ${Lit.String(s"${tagKind.label} $name")}.in(try {
+                      this.markup($description)
+                      ..$codeAccumulator
+                    } finally {
+                      ..$trailingAccumulator
+                    })
+                  """
+                } else {
+                  q"""
+                    ${Lit.String(s"${tagKind.label} $name")} - {
+                      this.markup($description)
+                      ..$trailingAccumulator
+                    }
+                  """
+                }
+                (Nil, Nil, tag :: tagAccumulator)
+              case (DocToken(tagKind: DocToken.TagKind, None, Some(body)),
+                    (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
+                val tag = if (codeAccumulator.nonEmpty) {
+                  q"""
+                    ${Lit.String(s"${tagKind.label} $body")}.in(try {
+                       ..$codeAccumulator
+                    } finally {
+                      ..$trailingAccumulator
+                    })
+                  """
+                } else {
+                  q"""
+                    ${Lit.String(s"${tagKind.label} $body")} - {
+                      ..$trailingAccumulator
+                    }
+                  """
+                }
+                (Nil, Nil, tag :: tagAccumulator)
+              case (DocToken(tagKind: DocToken.TagKind, name, body),
+                    (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
+                val tag = if (codeAccumulator.nonEmpty) {
+                  q"""
+                    ${Lit.String(tagKind.label)}.-(try {
+                       ..$codeAccumulator
+                    } finally {
+                      ..$trailingAccumulator
+                    })
+                  """
+                } else {
+                  q"""
+                    ${Lit.String(tagKind.label)} - {
+                      ..$trailingAccumulator
+                    }
+                  """
+                }
+                (Nil, Nil, tag :: tagAccumulator)
+              case (DocToken(DocToken.Paragraph, None, None), accumulators) =>
+                accumulators
+              case (otherToken, (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
+                val tokenXml = otherToken match {
+                  case DocToken(DocToken.InheritDoc, None, None) =>
+                    "@inheritdoc"
+                  case DocToken(DocToken.Paragraph, None, Some(text)) =>
+                    <p>{text}</p>
+                  case DocToken(DocToken.Heading, None, Some(text)) =>
+                    <h3>{text}</h3>
+                  case DocToken(DocToken.SubHeading, None, Some(text)) =>
+                    <h4>{text}</h4>
+                  case DocToken(DocToken.Description, None, Some(text)) =>
+                    text
+                  case _ =>
+                    otherToken
+                }
+                val markup = q"this.markup(${tokenXml.toString})"
+                if (codeAccumulator.nonEmpty) {
+                  (markup :: codeAccumulator, trailingAccumulator, tagAccumulator)
+                } else {
+                  (codeAccumulator, markup :: trailingAccumulator, tagAccumulator)
+                }
             }
+            code ::: trailing ::: tags
           }
-
         }
+      }
 
-        def testTree(tree: Tree): Seq[Stat] = {
-
-          def templateTestTree(name: Name, template: Template) = {
-            import template._
-            val title = name.syntax
-            q"""$title - {
+      def testTree(tree: Tree): Seq[Stat] = {
+        def templateTestTree(name: Name, template: Template) = {
+          import template._
+          val title = name.syntax
+          q"""$title - {
               ..${scaladocTestTree(comments.leading(tree))}
               ..${early.flatMap(testTree)}
               ..${stats.to[immutable.Seq].flatMap(_.flatMap(testTree))}
             }""" :: Nil
-          }
-          def leafTestTree(name: Name) = {
-            val title = name.syntax
-            val leadingComments = comments.leading(tree)
-            if (leadingComments.isEmpty) {
-              Nil
-            } else {
-              q"""$title - {
+        }
+        def leafTestTree(name: Name) = {
+          val title = name.syntax
+          val leadingComments = comments.leading(tree)
+          if (leadingComments.isEmpty) {
+            Nil
+          } else {
+            q"""$title - {
                 ..${scaladocTestTree(leadingComments)}
               }""" :: Nil
-            }
           }
-          tree match {
-            case Pkg(termRef, children) =>
-              val packageName = termRef.toString
-              q"""$packageName - {
+        }
+        tree match {
+          case Pkg(termRef, children) =>
+            val packageName = termRef.toString
+            q"""$packageName - {
                 ..${scaladocTestTree(comments.leading(tree))}
                 ..${children.flatMap(testTree)}
               }""" :: Nil
-            case Pkg.Object(_, name, template: Template) =>
-              templateTestTree(name, template)
-            case Defn.Object(_, name, template: Template) =>
-              templateTestTree(name, template)
-            case Defn.Trait(_, name, _, _, template: Template) =>
-              templateTestTree(name, template)
-            case Defn.Class(_, name, _, _, template: Template) =>
-              templateTestTree(name, template)
-            case Defn.Def(_, name, _, _, _, _) =>
-              leafTestTree(name)
-            case Defn.Type(_, name, _, _) =>
-              leafTestTree(name)
-            case Defn.Val(_, Seq(Pat.Var.Term(name)), _, _) =>
-              leafTestTree(name)
-            case Defn.Var(_, Seq(Pat.Var.Term(name)), _, _) =>
-              leafTestTree(name)
-            case Defn.Macro(_, name, _, _, _, _) =>
-              leafTestTree(name)
-            case Ctor.Secondary(_, name, _, _) =>
-              leafTestTree(name)
-            case _ =>
-              Nil
-          }
+          case Pkg.Object(_, name, template: Template) =>
+            templateTestTree(name, template)
+          case Defn.Object(_, name, template: Template) =>
+            templateTestTree(name, template)
+          case Defn.Trait(_, name, _, _, template: Template) =>
+            templateTestTree(name, template)
+          case Defn.Class(_, name, _, _, template: Template) =>
+            templateTestTree(name, template)
+          case Defn.Def(_, name, _, _, _, _) =>
+            leafTestTree(name)
+          case Defn.Type(_, name, _, _) =>
+            leafTestTree(name)
+          case Defn.Val(_, Seq(Pat.Var.Term(name)), _, _) =>
+            leafTestTree(name)
+          case Defn.Var(_, Seq(Pat.Var.Term(name)), _, _) =>
+            leafTestTree(name)
+          case Defn.Macro(_, name, _, _, _, _) =>
+            leafTestTree(name)
+          case Ctor.Secondary(_, name, _, _) =>
+            leafTestTree(name)
+          case _ =>
+            Nil
         }
-        source.stats.flatMap(testTree)
+      }
+      source.stats.flatMap(testTree)
     }}
     }"""
+      println(result)
+      result
   }
 }
