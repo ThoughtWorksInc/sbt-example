@@ -80,7 +80,7 @@ final class example(files: String*) extends StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     val q"new $annoationName(..$fileAsts)" = this.asInstanceOf[Tree]
     val q"class $specClassName" = defn.asInstanceOf[Tree]
-    val result = q"""class $specClassName extends _root_.org.scalatest.FreeSpec {
+    q"""class $specClassName extends _root_.org.scalatest.FreeSpec {
     ..${fileAsts.flatMap { fileAst =>
       val Lit.String(fileName) = fileAst
       // Workaround for https://github.com/scalameta/scalameta/issues/874
@@ -235,7 +235,5 @@ final class example(files: String*) extends StaticAnnotation {
       source.stats.flatMap(testTree)
     }}
     }"""
-      println(result)
-      result
   }
 }
