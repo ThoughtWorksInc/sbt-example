@@ -8,15 +8,46 @@ import scala.meta.parsers.Parsed.Success
 
 /** Generates unit tests from examples in Scaladoc in `files`.
   *
-  * By adding this annotation on `YourClassSpec` like this:
-  *
+  * = Getting started =
+  * 
+  * Suppose you have a source file `src/main/scala/yourPackage/YourClass.scala`,
+  * which contains some code examples in its Scaladoc.
+  * You can run those examples as test cases with this library.
+  * 
+  * == Step 1: Add this library as test dependency ==
+  * 
+  * Add the following code in your `build.sbt`:
+  * 
   * `<pre>
-  * @example("YourClass.scala") class YourClassSpec
+  * libraryDependencies += "com.thoughtworks.example" %% "example" % "latest.release" % Test
+  * 
+  * libraryDependencies += "org.scalatest" %% "scalatest"  % "latest.release" % Test
+  * 
+  * addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M8").cross(CrossVersion.patch) % Test)
   * </pre>`
+  * 
+  * == Step 2: Create the test suite class ==
+  * 
+  * Create a source file at `src/test/scala/yourPackage/YourClassSpec.scala`, with the following content:
+  * 
+  * `<pre>
+  * import com.thoughtworks.example
+  * 
+  * @example("src/main/scala/yourPackage/YourClass.scala")
+  * class YourClassSpec
+  * </pre>`
+  * 
+  * The <code>@example</code> annotation will extract code in Scaladoc in `src/main/scala/yourPackage/YourClass.scala` as a [[org.scalatest.FreeSpec]]
+  * 
+  * == Step 3: Run tests ==
+  * 
+  * ``` bash
+  * sbt test
+  * ```
+  * 
+  * You will notice that all code blocks inside <code>{{{ }}}</code> in Scaladoc comments in `src/test/scala/yourPackage/YourClassSpec.scala` are executed.
   *
-  * The `YourClassSpec` will become a [[org.scalatest.FreeSpec]] according to Scaladoc comments in `YourClass.scala`.
-  *
-  * == Scaladoc layout conversions ==
+  * = Scaladoc layout conversions =
   *
   * Code blocks before any Scaladoc tag are shared by all test cases. For example:
   *
