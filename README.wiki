@@ -1,0 +1,44 @@
+= example.scala =
+
+'''example.scala''' is a library for creating unit tests from examples in Scaladoc.
+
+== Getting started ==
+
+Suppose you have a source file `src/main/scala/yourPackage/YourClass.scala`,
+which contains some code examples in its Scaladoc.
+You can run those examples as test cases with the [[com.thoughtworks.example example]] annotation.
+
+=== Step 1: Add this library as test dependency ===
+
+Add the following code in your `build.sbt`:
+
+{{{
+libraryDependencies += "com.thoughtworks.example" %% "example" % "latest.release" % Test
+
+libraryDependencies += "org.scalatest" %% "scalatest"  % "latest.release" % Test
+
+addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M8").cross(CrossVersion.patch) % Test)
+}}}
+
+=== Step 2: Create the test suite class ===
+
+Create a source file at `src/test/scala/yourPackage/YourClassSpec.scala`, with the following content:
+
+{{{
+import com.thoughtworks.example
+
+@example("src/main/scala/yourPackage/YourClass.scala")
+class YourClassSpec
+}}}
+
+The [[com.thoughtworks.example]] annotation will extract code in Scaladoc in `src/main/scala/yourPackage/YourClass.scala` as a [[org.scalatest.FreeSpec]]
+
+=== Step 3: Run tests ===
+
+{{{
+sbt test
+}}}
+
+You will notice that all code blocks inside <code>{{{ }}}</code> in Scaladoc comments in `src/test/scala/yourPackage/YourClassSpec.scala` are executed.
+
+@see [[com.thoughtworks.example]]

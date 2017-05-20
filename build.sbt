@@ -37,6 +37,9 @@ lazy val unidoc = project
     UnidocKeys.unidocProjectFilter in ScalaUnidoc in UnidocKeys.unidoc := {
       inProjects(ThisProject)
     },
+    scalacOptions in ScalaUnidoc in UnidocKeys.unidoc ++= {
+      Seq("-doc-root-content", "README.wiki")
+    },
     sourceGenerators in Compile += Def.task {
       for {
         sourceFile <- (unmanagedSources in Compile in LocalRootProject).value

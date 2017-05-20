@@ -6,46 +6,17 @@ import scala.meta._
 import scala.meta.contrib.{AssociatedComments, DocToken, ScaladocParser}
 import scala.meta.parsers.Parsed.Success
 
-/** An annotation for creating unit tests from examples in Scaladoc.
+/** Generates unit tests from examples in Scaladoc in `files`.
   *
-  * = Getting Started =
-  *
-  * Suppose you have a source file `src/main/scala/yourPackage/YourClass.scala`,
-  * which contains some code examples in its Scaladoc.
-  * You can run those examples as test cases with this [[example]] annotation
-  *
-  * == Step 1: Add this library as test dependency ==
-  *
-  * Add the following code in your `build.sbt`:
+  * By adding this annotation on `YourClassSpec` like this:
   *
   * `<pre>
-  * libraryDependencies += "com.thoughtworks.example" %% "example" % "latest.release" % Test
-  *
-  * libraryDependencies += "org.scalatest" %% "scalatest"  % "latest.release" % Test
-  *
-  * addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M8").cross(CrossVersion.patch) % Test)
+  * @example("YourClass.scala") class YourClassSpec
   * </pre>`
   *
-  * == Step 2: Create the test suite class ==
+  * The `YourClassSpec` will become a [[org.scalatest.FreeSpec]] according to Scaladoc comments in `YourClass.scala`.
   *
-  * Create a source file at `src/test/scala/yourPackage/YourClassSpec.scala`, with the following content:
-  *
-  * `<pre>
-  * @com.thoughtworks.example("src/main/scala/yourPackage/YourClass.scala")
-  * class YourClassSpec
-  * </pre>`
-  *
-  * The [[com.thoughtworks.example]] annotation will extract code in Scaladoc in `src/main/scala/yourPackage/YourClass.scala` as a [[org.scalatest.FreeSpec]]
-  *
-  * == Step 3: Run tests ==
-  *
-  * `<pre>
-  * sbt test
-  * </pre>`
-  *
-  * You will notice that all code blocks inside <code>{{{ }}}</code> in Scaladoc comments in `src/test/scala/yourPackage/YourClassSpec.scala` are executed.
-  *
-  * = Shared code block =
+  * == Scaladoc layout conversions ==
   *
   * Code blocks before any Scaladoc tag are shared by all test cases. For example:
   *
