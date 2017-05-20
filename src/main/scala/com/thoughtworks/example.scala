@@ -192,12 +192,12 @@ final class example(files: String*) extends StaticAnnotation {
         }
         def leafTestTree(name: Name) = {
           val title = name.syntax
-          val scaladocTestTree = scaladocTestTree(comments.leading(tree))
-          if (scaladocTestTree.isEmpty) {
+          val trees = scaladocTestTree(comments.leading(tree))
+          if (trees.isEmpty) {
             Nil
           } else {
             q"""$title - {
-              ..$scaladocTestTree
+              ..$trees
             }""" :: Nil
           }
         }
