@@ -1,6 +1,6 @@
 = example.scala =
 
-'''example.scala''' is a library for creating unit tests from examples in Scaladoc.
+'''example.scala''' is an annotation for creating unit tests from examples in Scaladoc.
 
 == Getting started ==
 
