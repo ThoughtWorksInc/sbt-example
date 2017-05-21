@@ -9,42 +9,42 @@ import scala.meta.parsers.Parsed.Success
 /** Generates unit tests from examples in Scaladoc in `files`.
   *
   * = Getting started =
-  * 
+  *
   * Suppose you have a source file `src/main/scala/yourPackage/YourClass.scala`,
   * which contains some code examples in its Scaladoc.
   * You can run those examples as test cases with this library.
-  * 
+  *
   * == Step 1: Add this library as test dependency ==
-  * 
+  *
   * Add the following code in your `build.sbt`:
-  * 
+  *
   * `<pre>
   * libraryDependencies += "com.thoughtworks.example" %% "example" % "latest.release" % Test
-  * 
+  *
   * libraryDependencies += "org.scalatest" %% "scalatest"  % "latest.release" % Test
-  * 
+  *
   * addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M8").cross(CrossVersion.patch) % Test)
   * </pre>`
-  * 
+  *
   * == Step 2: Create the test suite class ==
-  * 
+  *
   * Create a source file at `src/test/scala/yourPackage/YourClassSpec.scala`, with the following content:
-  * 
+  *
   * `<pre>
   * import com.thoughtworks.example
-  * 
+  *
   * @example("src/main/scala/yourPackage/YourClass.scala")
-  * class YourClassSpec
+  * class YourClassSpec extends org.scalatest.FreeSpec
   * </pre>`
-  * 
+  *
   * The <code>@example</code> annotation will extract code in Scaladoc in `src/main/scala/yourPackage/YourClass.scala` as a [[org.scalatest.FreeSpec]]
-  * 
+  *
   * == Step 3: Run tests ==
-  * 
+  *
   * ``` bash
   * sbt test
   * ```
-  * 
+  *
   * You will notice that all code blocks inside <code>{{{ }}}</code> in Scaladoc comments in `src/test/scala/yourPackage/YourClassSpec.scala` are executed.
   *
   * = Scaladoc layout conversions =
@@ -110,9 +110,8 @@ final class example(files: String*) extends StaticAnnotation {
   @compileTimeOnly("This annoation requires macro-paradise plugin")
   inline def apply(defn: Any): Any = meta {
     val q"new $annoationName(..$fileAsts)" = this.asInstanceOf[Tree]
-    val q"class $specClassName" = defn.asInstanceOf[Tree]
-    q"""class $specClassName extends _root_.org.scalatest.FreeSpec {
-    ..${fileAsts.flatMap { fileAst =>
+
+    val tests = fileAsts.flatMap { fileAst =>
       val Lit.String(fileName) = fileAst
       // Workaround for https://github.com/scalameta/scalameta/issues/874
       val Success(source) = (Input.File(fileName), dialects.ParadiseTypelevel212).parse[Source]
@@ -264,7 +263,11 @@ final class example(files: String*) extends StaticAnnotation {
         }
       }
       source.stats.flatMap(testTree)
-    }}
-    }"""
+    };
+
+    {
+      val Defn.Class(mods, name, tparams, ctor, Template(early, parents, self, stats)) = defn.asInstanceOf[Tree]
+      Defn.Class(mods, name, tparams, ctor, Template(early, parents, self, Some(stats.getOrElse(Nil) ++ tests)))
+    }
   }
 }

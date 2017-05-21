@@ -25,7 +25,7 @@ sourceGenerators in Test += Def.task {
       Literal(Constant(file.toString))
     }
     .mkString(",")
-  val fileContent = raw"""@_root_.com.thoughtworks.example($fileNames) class $className"""
+  val fileContent = raw"""@_root_.com.thoughtworks.example($fileNames) class $className extends org.scalatest.FreeSpec"""
   IO.write(outputFile, fileContent, scala.io.Codec.UTF8.charSet)
   Seq(outputFile)
 }.taskValue
