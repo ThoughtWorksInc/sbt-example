@@ -57,12 +57,10 @@ import scala.meta.parsers.Parsed.Success
   *
   * Then [[http://www.scalatest.org/user_guide/using_matchers Scalatest matchers]] will be available for all test cases.
   *
-  * @example A code block under a Scaladoc tag is a test case.
-  *
-  *          The test case is inside a [[org.scalatest.FreeSpec]]
+  * @example A variable defined under a Scaladoc tag is not accessible from code blocks under another tag
   *
   *          {{{
-  *            this should be(a[FreeSpec])
+  *            "i" shouldNot compile
   *          }}}
   *
   * @example A code block may define variables.
@@ -82,10 +80,12 @@ import scala.meta.parsers.Parsed.Success
   *            s should be("text")
   *          }}}
   *
-  * @example A variable defined under a Scaladoc tag is not accessible from code blocks under another tag
+  * @example A code block under a Scaladoc tag is a test case.
+  *
+  *          The test case is inside a [[org.scalatest.FreeSpec]]
   *
   *          {{{
-  *            "i" shouldNot compile
+  *            this should be(a[FreeSpec])
   *          }}}
   *
   * @param files Source files that contain Scaladoc to import
