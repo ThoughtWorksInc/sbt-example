@@ -23,7 +23,11 @@ import scala.meta.parsers.Parsed.Success
   *
   * libraryDependencies += "org.scalatest" %% "scalatest"  % "latest.release" % Test
   *
-  * addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M8").cross(CrossVersion.patch) % Test)
+  * addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M8").cross(CrossVersion.patch))
+  *
+  * autoCompilerPlugins in Compile := false
+  * 
+  * autoCompilerPlugins in Test := true
   * </pre>`
   *
   * == Step 2: Create the test suite class ==
