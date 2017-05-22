@@ -45,9 +45,9 @@ import scala.meta.parsers.Parsed.Success
   *
   * == Step 3: Run tests ==
   *
-  * ``` bash
+  * `<pre>
   * sbt test
-  * ```
+  * </pre>`
   *
   * You will notice that all code blocks inside <code>{{{ }}}</code> in Scaladoc comments in `src/test/scala/yourPackage/YourClassSpec.scala` are executed.
   *
