@@ -25,9 +25,10 @@ import scala.meta.parsers.Parsed.Success
   *
   * addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M8").cross(CrossVersion.patch))
   *
+  * // paradise plugin should only be enabled in test configuration.
+  * autoCompilerPlugins in Test := true
   * autoCompilerPlugins in Compile := false
   *
-  * autoCompilerPlugins in Test := true
   * </pre>`
   *
   * == Step 2: Create the test suite class ==
