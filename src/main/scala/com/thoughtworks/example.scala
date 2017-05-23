@@ -49,7 +49,7 @@ import scala.meta.parsers.Parsed.Success
   * sbt test
   * </pre>`
   *
-  * You will notice that all code blocks inside <code>{{{ }}}</code> in Scaladoc comments in `src/test/scala/yourPackage/YourClassSpec.scala` are executed.
+  * You will notice that all code blocks inside <code>{{{ }}}</code> in Scaladoc comments in `src/test/scala/yourPackage/YourClass.scala` are executed.
   *
   * = Scaladoc layout conversions =
   *
