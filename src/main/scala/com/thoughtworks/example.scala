@@ -95,6 +95,8 @@ import scala.meta.parsers.Parsed.Success
   * @param files Source files that contain Scaladoc to import
   *
   * @author 杨博 (Yang Bo) &lt;pop.atry@gmail.com&gt;
+  *
+  * @see [example.scala on Github](https://github.com/ThoughtWorksInc/example.scala)
   */
 @compileTimeOnly("This annoation requires macro-paradise plugin")
 final class example(files: String*) extends StaticAnnotation {
