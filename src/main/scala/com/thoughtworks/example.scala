@@ -96,7 +96,7 @@ import scala.meta.parsers.Parsed.Success
   *
   * @author 杨博 (Yang Bo) &lt;pop.atry@gmail.com&gt;
   *
-  * @see [example.scala on Github](https://github.com/ThoughtWorksInc/example.scala)
+  * @see [[https://github.com/ThoughtWorksInc/example.scala example.scala on Github]]
   */
 @compileTimeOnly("This annoation requires macro-paradise plugin")
 final class example(files: String*) extends StaticAnnotation {
