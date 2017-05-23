@@ -33,6 +33,7 @@ sourceGenerators in Test += Def.task {
 
 lazy val unidoc = project
   .enablePlugins(StandaloneUnidoc, TravisUnidocTitle)
+  .disablePlugins(TravisUnidocSourceUrl)
   .dependsOn(LocalRootProject)
   .settings(
     UnidocKeys.unidocProjectFilter in ScalaUnidoc in UnidocKeys.unidoc := {
