@@ -130,7 +130,7 @@ final class example(files: String*) extends StaticAnnotation {
             val (code, trailing, tags) = scaladoc.foldRight[(List[Stat], List[Stat], List[Stat])]((Nil, Nil, Nil)) {
               case (DocToken(DocToken.CodeBlock, None, Some(codeBlock)),
                     (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
-                val Success(Block(stats)) = ("{" + codeBlock + "}").parse[Stat]
+                val Success(Block(stats)) = ("{\n" + codeBlock + "\n}").parse[Stat]
                 (stats ++: codeAccumulator, trailingAccumulator, tagAccumulator)
               case (DocToken(tagKind: DocToken.TagKind, Some(name), Some(description)),
                     (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
