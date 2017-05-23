@@ -61,7 +61,7 @@ import scala.meta.parsers.Parsed.Success
   *
   * Then [[http://www.scalatest.org/user_guide/using_matchers Scalatest matchers]] will be available for all test cases.
   *
-  * @example A variable defined under a Scaladoc tag is not accessible from code blocks under another tag
+  * @example A variable defined under a Scaladoc tag is not accessible from code blocks under another tags.
   *
   *          {{{
   *            "i" shouldNot compile
@@ -74,7 +74,7 @@ import scala.meta.parsers.Parsed.Success
   *            val s = "text"
   *          }}}
   *
-  *          Those variables are accessible from other code blocks under the same Scaladoc tag
+  *          Those variables are accessible from other code blocks under the same Scaladoc tag.
   *
   *          {{{
   *            i should be(1)
