@@ -26,7 +26,7 @@ import scala.meta.parsers.Parsed.Success
   * addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M8").cross(CrossVersion.patch))
   *
   * autoCompilerPlugins in Compile := false
-  * 
+  *
   * autoCompilerPlugins in Test := true
   * </pre>`
   *
@@ -61,11 +61,11 @@ import scala.meta.parsers.Parsed.Success
   *
   * Then [[http://www.scalatest.org/user_guide/using_matchers Scalatest matchers]] will be available for all test cases.
   *
-  * @example A variable defined under a Scaladoc tag is not accessible from code blocks under another tags.
+  * @note A variable defined under a Scaladoc tag is not accessible from code blocks under another tags.
   *
-  *          {{{
-  *            "i" shouldNot compile
-  *          }}}
+  *       {{{
+  *         "i" shouldNot compile
+  *       }}}
   *
   * @example A code block may define variables.
   *
