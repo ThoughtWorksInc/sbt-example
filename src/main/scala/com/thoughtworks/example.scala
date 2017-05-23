@@ -222,10 +222,10 @@ final class example(files: String*) extends StaticAnnotation {
           import template._
           val title = name.syntax
           q"""$title - {
-              ..${scaladocTestTree(comments.leading(tree))}
-              ..${early.flatMap(testTree)}
-              ..${stats.to[immutable.Seq].flatMap(_.flatMap(testTree))}
-            }""" :: Nil
+            ..${scaladocTestTree(comments.leading(tree))}
+            ..${early.flatMap(testTree)}
+            ..${stats.to[immutable.Seq].flatMap(_.flatMap(testTree))}
+          }""" :: Nil
         }
         def leafTestTree(name: Name) = {
           val title = name.syntax
@@ -242,9 +242,9 @@ final class example(files: String*) extends StaticAnnotation {
           case Pkg(termRef, children) =>
             val packageName = termRef.toString
             q"""$packageName - {
-                ..${scaladocTestTree(comments.leading(tree))}
-                ..${children.flatMap(testTree)}
-              }""" :: Nil
+              ..${scaladocTestTree(comments.leading(tree))}
+              ..${children.flatMap(testTree)}
+            }""" :: Nil
           case Pkg.Object(_, name, template: Template) =>
             templateTestTree(name, template)
           case Defn.Object(_, name, template: Template) =>
