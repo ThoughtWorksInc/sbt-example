@@ -52,7 +52,7 @@ import scala.meta.parsers.Parsed.Success
   *
   * You will notice that all code blocks inside <code>{{{ }}}</code> in Scaladoc comments in `src/test/scala/yourPackage/YourClass.scala` are executed.
   *
-  * = Scaladoc layout conversions =
+  * = Common code =
   *
   * Code blocks before any Scaladoc tag are shared by all test cases. For example:
   *
