@@ -23,7 +23,6 @@ object Example extends AutoPlugin {
 
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
     addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M8").cross(CrossVersion.patch)),
-    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.1" % Test
     libraryDependencies += "com.thoughtworks.example" %% "example" % "1.0.1" % Test,
     name in generateExample := raw"""${(name in generateExample).value}ScaladocExample""",
     generateExample := {
