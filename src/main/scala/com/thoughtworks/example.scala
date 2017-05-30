@@ -130,7 +130,7 @@ final class example(files: String*) extends StaticAnnotation {
               case (DocToken(DocToken.CodeBlock, None, Some(codeBlock)),
                     (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
                 val Success(Term.Block(stats)) =
-                  (("{\n" + codeBlock + "\n}"), dialects.ParadiseTypelevel212).parse[Stat]
+                  (Input.String("{\n" + codeBlock + "\n}"), dialects.ParadiseTypelevel212).parse[Stat]
                 (stats ++: codeAccumulator, trailingAccumulator, tagAccumulator)
               case (DocToken(tagKind: DocToken.TagKind, Some(name), Some(description)),
                     (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
