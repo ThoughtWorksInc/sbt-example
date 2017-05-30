@@ -1,7 +1,6 @@
 package com.thoughtworks
 import scala.annotation._
 import scala.collection.immutable
-import scala.meta.Term.Block
 import scala.meta._
 import scala.meta.contrib.{AssociatedComments, DocToken, ScaladocParser}
 import scala.meta.parsers.Parsed.Success
@@ -130,7 +129,8 @@ final class example(files: String*) extends StaticAnnotation {
             val (code, trailing, tags) = scaladoc.foldRight[(List[Stat], List[Stat], List[Stat])]((Nil, Nil, Nil)) {
               case (DocToken(DocToken.CodeBlock, None, Some(codeBlock)),
                     (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
-                val Success(Block(stats)) = ("{\n" + codeBlock + "\n}").parse[Stat]
+                val Success(Term.Block(stats)) =
+                  (("{\n" + codeBlock + "\n}"), dialects.ParadiseTypelevel212).parse[Stat]
                 (stats ++: codeAccumulator, trailingAccumulator, tagAccumulator)
               case (DocToken(tagKind: DocToken.TagKind, Some(name), Some(description)),
                     (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
