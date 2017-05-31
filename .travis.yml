@@ -20,7 +20,7 @@ cache:
     - $HOME/.sbt/boot/
 
 script:
-  - sbt +test +publish
+  - sbt +test 'set TaskKey[Unit]("publishSnapshot") := { if (isSnapshot.value) publish.value else () }' +publishSnapshot
 
 before_deploy:
 
