@@ -2,8 +2,10 @@ package com.thoughtworks.sbtexample
 
 import sbt._
 import Keys._
+import org.scalajs.sbtplugin.{ScalaJSCrossVersion, ScalaJSPlugin}
 import sbt.plugins.JvmPlugin
 import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
+import org.scalajs.sbtplugin.impl.ScalaJSGroupID
 
 object Example extends AutoPlugin {
 
@@ -25,7 +27,13 @@ object Example extends AutoPlugin {
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
     addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M8").cross(CrossVersion.patch)),
     libraryDependencies += "com.thoughtworks.example" %% "example" % "1.0.3" % Test,
-    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.3" % Test,
+    libraryDependencies += {
+      if (ScalaJSPlugin.AutoImport.isScalaJSProject.?.value.getOrElse(false)) {
+        "org.scalatest" % "scalatest" % "3.0.3" % Test cross ScalaJSCrossVersion.binary
+      } else {
+        "org.scalatest" %% "scalatest" % "3.0.3" % Test
+      }
+    },
     name in generateExample := raw"""${(name in generateExample).value}ScaladocExample""",
     generateExample := {
       val className = s"${name.value}Spec"
