@@ -25,8 +25,8 @@ object Example extends AutoPlugin {
   )
 
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
-    addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M8").cross(CrossVersion.patch)),
-    libraryDependencies += "com.thoughtworks.example" %% "example" % "1.0.3" % Test,
+    addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M9").cross(CrossVersion.patch)),
+    libraryDependencies += "com.thoughtworks.example" %% "example" % "2.0.0" % Test,
     libraryDependencies += {
       if (ScalaJSPlugin.AutoImport.isScalaJSProject.?.value.getOrElse(false)) {
         "org.scalatest" % "scalatest" % "3.0.3" % Test cross ScalaJSCrossVersion.binary
@@ -36,7 +36,6 @@ object Example extends AutoPlugin {
     },
     name in generateExample := raw"""${(name in generateExample).value}ScaladocExample""",
     generateExample := {
-      val className = s"${name.value}Spec"
       val outputFile = (sourceManaged in Test).value / raw"""${(name in generateExample).value}.scala"""
       val fileNames = (unmanagedSources in Compile).value
         .map { file =>
@@ -44,10 +43,12 @@ object Example extends AutoPlugin {
           Literal(Constant(file.toString))
         }
         .mkString(",")
+      import scala.reflect.runtime.universe._
+      val className = newTypeName((name in generateExample).value).encodedName
       val fileContent = raw"""
         package ${(organization in generateExample).value};
         @_root_.com.thoughtworks.example($fileNames)
-        final class `${(name in generateExample).value}` extends ${exampleSuperTypes.value.mkString(" with ")}
+        final class $className extends ${exampleSuperTypes.value.mkString(" with ")}
       """
       IO.write(outputFile, fileContent, scala.io.Codec.UTF8.charSet)
       Seq(outputFile)
