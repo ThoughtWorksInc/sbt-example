@@ -6,6 +6,8 @@ libraryDependencies += "org.scalameta" %% "contrib" % "1.8.0"
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.0.6"
 
+libraryDependencies += scalaOrganization.value % "scala-reflect" % scalaVersion.value % Provided
+
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % Test
 
 organization in ThisBuild := "com.thoughtworks.example"
@@ -56,14 +58,13 @@ lazy val unidoc = project
 
 enablePlugins(Travis)
 
-lazy val secret = project settings(publishArtifact := false) configure { secret =>
+lazy val secret = project settings (publishArtifact := false) configure { secret =>
   sys.env.get("GITHUB_PERSONAL_ACCESS_TOKEN") match {
     case Some(pat) =>
       import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
-      secret.addSbtFilesFromGit(
-        "https://github.com/ThoughtWorksInc/tw-data-china-continuous-delivery-password.git",
-        new UsernamePasswordCredentialsProvider(pat, ""),
-        file("secret.sbt"))
+      secret.addSbtFilesFromGit("https://github.com/ThoughtWorksInc/tw-data-china-continuous-delivery-password.git",
+                                new UsernamePasswordCredentialsProvider(pat, ""),
+                                file("secret.sbt"))
     case None =>
       secret
   }

@@ -276,7 +276,11 @@ final class example(files: String*) extends StaticAnnotation {
 
     {
       val Defn.Class(mods, name, tparams, ctor, Template(early, parents, self, stats)) = defn.asInstanceOf[Tree]
-      Defn.Class(mods, name, tparams, ctor, Template(early, parents, self, Some(stats.getOrElse(Nil) ++ tests)))
+      import scala.reflect.runtime.universe.TypeName
+      // Workaround for https://github.com/scalameta/scalameta/issues/931
+      val workaround931Name = Type.Name(TypeName(name.value).encodedName.toString)
+      val mergedStats = Some(stats.getOrElse(Nil) ++ tests)
+      Defn.Class(mods, workaround931Name, tparams, ctor, Template(early, parents, self, mergedStats))
     }
   }
 }
