@@ -1,8 +1,8 @@
-addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M8").cross(CrossVersion.patch))
+addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M9").cross(CrossVersion.patch))
 
-libraryDependencies += "org.scalameta" %% "scalameta" % "1.7.0"
+libraryDependencies += "org.scalameta" %% "scalameta" % "1.8.0"
 
-libraryDependencies += "org.scalameta" %% "contrib" % "1.7.0"
+libraryDependencies += "org.scalameta" %% "contrib" % "1.8.0"
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.0.6"
 

@@ -1,4 +1,6 @@
 package com.thoughtworks
+import java.io.File
+
 import scala.annotation._
 import scala.collection.immutable
 import scala.meta._
@@ -120,7 +122,7 @@ final class example(files: String*) extends StaticAnnotation {
     val tests = fileAsts.flatMap { fileAst =>
       val Lit.String(fileName) = fileAst
       // Workaround for https://github.com/scalameta/scalameta/issues/874
-      val Success(source) = (Input.File(fileName), dialects.ParadiseTypelevel212).parse[Source]
+      val Success(source) = (Input.File(new File(fileName)), dialects.ParadiseTypelevel212).parse[Source]
       val comments = AssociatedComments(source)
 
       def scaladocTestTree(leadingComments: Set[Token.Comment]): List[Stat] = {
