@@ -25,8 +25,20 @@ object Example extends AutoPlugin {
   )
 
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
-    addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M9").cross(CrossVersion.patch)),
-    libraryDependencies += "com.thoughtworks.example" %% "example" % "2.0.0" % Test,
+    libraryDependencies += {
+      if (scalaBinaryVersion.value == "2.10") {
+        compilerPlugin(("org.scalamacros" % "paradise" % "2.1.0").cross(CrossVersion.patch))
+      } else {
+        compilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M9").cross(CrossVersion.patch))
+      }
+    },
+    libraryDependencies ++= {
+      if (scalaBinaryVersion.value == "2.10") {
+        Nil
+      } else {
+        Seq("com.thoughtworks.example" %% "example" % "2.0.0" % Test)
+      }
+    },
     libraryDependencies += {
       if (ScalaJSPlugin.AutoImport.isScalaJSProject.?.value.getOrElse(false)) {
         "org.scalatest" % "scalatest" % "3.0.3" % Test cross ScalaJSCrossVersion.binary
@@ -53,6 +65,12 @@ object Example extends AutoPlugin {
       IO.write(outputFile, fileContent, scala.io.Codec.UTF8.charSet)
       Seq(outputFile)
     },
-    (sourceGenerators in Test) += generateExample.taskValue
+    (sourceGenerators in Test) ++= {
+      if (scalaBinaryVersion.value == "2.10") {
+        Nil
+      } else {
+        Seq(generateExample.taskValue)
+      }
+    }
   )
 }
