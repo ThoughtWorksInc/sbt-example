@@ -27,9 +27,9 @@ object Example extends AutoPlugin {
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
     libraryDependencies += {
       if (scalaBinaryVersion.value == "2.10") {
-        compilerPlugin(("org.scalamacros" % "paradise" % "2.1.0").cross(CrossVersion.patch))
+        compilerPlugin(("org.scalamacros" % "paradise" % "2.1.1").cross(CrossVersion.patch))
       } else {
-        compilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M9").cross(CrossVersion.patch))
+        compilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M10").cross(CrossVersion.patch))
       }
     },
     libraryDependencies ++= {
