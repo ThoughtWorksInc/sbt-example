@@ -11,6 +11,9 @@ addSbtPlugin("com.thoughtworks.example" % "sbt-example" % "latest.release")
 ``` sbt
 // build.sbt
 enablePlugins(Example)
+
+// Additional traits to be mixed-in for the generated unit tests:
+// exampleSuperTypes += "_root_.org.scalatest.Inside"
 ```
 
 ``` shell
