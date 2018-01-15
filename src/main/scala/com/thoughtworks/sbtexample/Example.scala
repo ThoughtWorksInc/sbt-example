@@ -29,7 +29,7 @@ object Example extends AutoPlugin {
       if (scalaBinaryVersion.value == "2.10") {
         compilerPlugin(("org.scalamacros" % "paradise" % "2.1.1").cross(CrossVersion.patch))
       } else {
-        compilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M10").cross(CrossVersion.patch))
+        compilerPlugin(("org.scalameta" % "paradise" % "latest.release").cross(CrossVersion.patch))
       }
     },
     libraryDependencies ++= {
@@ -41,9 +41,9 @@ object Example extends AutoPlugin {
     },
     libraryDependencies += {
       if (ScalaJSPlugin.AutoImport.isScalaJSProject.?.value.getOrElse(false)) {
-        "org.scalatest" % "scalatest" % "3.0.3" % Test cross ScalaJSCrossVersion.binary
+        "org.scalatest" % "scalatest" % "3.0.4" % Test cross ScalaJSCrossVersion.binary
       } else {
-        "org.scalatest" %% "scalatest" % "3.0.3" % Test
+        "org.scalatest" %% "scalatest" % "3.0.4" % Test
       }
     },
     name in generateExample := raw"""${(name in generateExample).value}ScaladocExample""",
