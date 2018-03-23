@@ -25,7 +25,7 @@ import sbt.plugins.JvmPlugin
   *
   * `<pre>
   * // project/plugins.sbt
-  * addSbtPlugin("com.thoughtworks.example" % "sbt-example" % "4.0.0-M0")
+  * addSbtPlugin("com.thoughtworks.example" % "sbt-example" % "latest.release")
   * </pre>`
   
   * `<pre>
