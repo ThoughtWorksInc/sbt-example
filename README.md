@@ -8,6 +8,7 @@
 
 The previous version of this project is the macro annotation [`@example`](https://javadoc.io/page/com.thoughtworks.example/unidoc_2.12/2.0.0/com/thoughtworks/example.html), which is [deprecated](https://github.com/scalameta/scalameta/issues/1182) and does not support Scala 2.12.5+ version.
 
-## Showcase
+## Showcases
 
 * [AsynchronousPool](https://javadoc.io/page/com.thoughtworks.raii/asynchronous_2.12/latest/com/thoughtworks/raii/AsynchronousPool$.html) - an asynchronous resource pool, whose Scaladoc contains tests written in [ScalaTest](https://scalatest.org/) and [ScalaMock](https://scalamock.org)
+* [Factory](https://javadoc.io/page/com.thoughtworks.feature/the_2.12/latest/com/thoughtworks/feature/Factory.html) - a dependent type class for dependency injection, whose Scaladoc contains a huge number of small usecases.
