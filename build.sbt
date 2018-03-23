@@ -34,3 +34,5 @@ lazy val secret = project.settings(publishArtifact := false).in {
   }
   secretDirectory
 }
+
+publishArtifact := false
