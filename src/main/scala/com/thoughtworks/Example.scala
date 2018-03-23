@@ -21,13 +21,16 @@ import sbt.plugins.JvmPlugin
   * which contains some code examples in its Scaladoc.
   * You can run those examples as test cases with this library.
   *
-  * == Step 1: Add this library as test dependency ==
-  *
-  * Add the following code in your `project/plugins.sbt`:
+  * == Step 1: Add this plug-in in your sbt settings ==
   *
   * `<pre>
   * // project/plugins.sbt
   * addSbtPlugin("com.thoughtworks.example" % "sbt-example" % "4.0.0-M0")
+  * </pre>`
+  
+  * `<pre>
+  * // build.sbt
+  * enablePlugins(Example)
   * </pre>`
   *
   * == Step 2: Create the test suite class ==
