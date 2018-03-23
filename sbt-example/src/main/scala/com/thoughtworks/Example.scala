@@ -23,19 +23,11 @@ import sbt.plugins.JvmPlugin
   *
   * == Step 1: Add this library as test dependency ==
   *
-  * Add the following code in your `build.sbt`:
+  * Add the following code in your `project/plugins.sbt`:
   *
   * `<pre>
-  * libraryDependencies += "com.thoughtworks.example" %% "example" % "latest.release" % Test
-  *
-  * libraryDependencies += "org.scalatest" %% "scalatest"  % "latest.release" % Test
-  *
-  * addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M8").cross(CrossVersion.patch))
-  *
-  * // paradise plugin should only be enabled in test configuration.
-  * autoCompilerPlugins in Test := true
-  * autoCompilerPlugins in Compile := false
-  *
+  * // project/plugins.sbt
+  * addSbtPlugin("com.thoughtworks.example" % "sbt-example" % "4.0.0-M0")
   * </pre>`
   *
   * == Step 2: Create the test suite class ==
