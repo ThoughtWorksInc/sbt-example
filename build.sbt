@@ -6,16 +6,7 @@ name := "example"
 
 lazy val `sbt-example` = project
 
-lazy val unidoc = project
-  .enablePlugins(StandaloneUnidoc, TravisUnidocTitle)
-  .disablePlugins(TravisUnidocSourceUrl)
-  .dependsOn(LocalRootProject)
-  .settings(
-    unidocProjectFilter in ScalaUnidoc in BaseUnidocPlugin.autoImport.unidoc := {
-      inProjects(ThisProject)
-    },
-    libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1"
-  )
+lazy val unidoc = project.enablePlugins(StandaloneUnidoc, TravisUnidocTitle)
 
 // TODO: This project should be created by an sbt plugin.
 lazy val secret = project.settings(publishArtifact := false).in {
