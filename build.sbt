@@ -33,6 +33,8 @@ sourceGenerators in Test += Def.task {
   Seq(outputFile)
 }.taskValue
 
+lazy val `sbt-example` = project
+
 lazy val unidoc = project
   .enablePlugins(StandaloneUnidoc, TravisUnidocTitle)
   .disablePlugins(TravisUnidocSourceUrl)
