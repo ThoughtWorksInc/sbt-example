@@ -46,10 +46,10 @@ import sbt.plugins.JvmPlugin
   * Code blocks before any Scaladoc tag are shared by all test cases. For example:
   *
   * {{{
-  *   import org.scalatest.FreeSpec
+  * import org.scalatest.FreeSpec
   * }}}
   *
-  * Then [[http://www.scalatest.org/user_guide/using_matchers Scalatest matchers]] will be available for all test cases.
+  * Then the name `FreeSpec` will be available for all test cases.
   *
   * @note A variable defined under a Scaladoc tag is not accessible from code blocks under another tags.
   *
