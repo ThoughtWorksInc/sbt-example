@@ -1,4 +1,4 @@
-addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M9").cross(CrossVersion.patch))
+addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M11").cross(CrossVersion.patch))
 
 libraryDependencies += "org.scalameta" %% "scalameta" % "1.8.0"
 
@@ -14,7 +14,7 @@ organization in ThisBuild := "com.thoughtworks.example"
 
 scalacOptions ++= Seq("-Ypatmat-exhaust-depth", "off")
 
-crossScalaVersions := Seq("2.12.2")
+crossScalaVersions := Seq("2.12.4")
 
 name := "example"
 
