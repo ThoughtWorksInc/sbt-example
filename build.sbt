@@ -6,6 +6,4 @@ name := "example"
 
 lazy val `sbt-example` = project
 
-lazy val unidoc = project.enablePlugins(StandaloneUnidoc, TravisUnidocTitle)
-
 publishArtifact := false
