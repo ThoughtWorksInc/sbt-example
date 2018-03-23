@@ -14,7 +14,7 @@ organization in ThisBuild := "com.thoughtworks.example"
 
 scalacOptions ++= Seq("-Ypatmat-exhaust-depth", "off")
 
-crossScalaVersions := Seq("2.11.11", "2.12.2")
+crossScalaVersions := Seq("2.12.2")
 
 name := "example"
 
