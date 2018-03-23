@@ -33,26 +33,13 @@ import sbt.plugins.JvmPlugin
   * enablePlugins(Example)
   * </pre>`
   *
-  * == Step 2: Create the test suite class ==
-  *
-  * Create a source file at `src/test/scala/yourPackage/YourClassSpec.scala`, with the following content:
-  *
-  * `<pre>
-  * import com.thoughtworks.example
-  *
-  * @example("src/main/scala/yourPackage/YourClass.scala")
-  * class YourClassSpec extends org.scalatest.FreeSpec
-  * </pre>`
-  *
-  * The <code>@example</code> annotation will extract code in Scaladoc in `src/main/scala/yourPackage/YourClass.scala` as a [[org.scalatest.FreeSpec]]
-  *
-  * == Step 3: Run tests ==
+  * == Step 2: Run tests ==
   *
   * `<pre>
   * sbt test
   * </pre>`
   *
-  * You will notice that all code blocks inside <code>{{{ }}}</code> in Scaladoc comments in `src/test/scala/yourPackage/YourClass.scala` are executed.
+  * You will notice that all code blocks inside <code>{{{ }}}</code> in Scaladoc comments under `src/main/scala` are executed.
   *
   * = Common code =
   *
