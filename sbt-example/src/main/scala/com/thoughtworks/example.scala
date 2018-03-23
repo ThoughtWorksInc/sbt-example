@@ -1,6 +1,8 @@
 package com.thoughtworks
 import java.io.File
 
+import sbt.AutoPlugin
+
 import scala.annotation._
 import scala.collection.immutable
 import scala.meta._
@@ -58,7 +60,7 @@ import scala.meta.parsers.Parsed.Success
   * Code blocks before any Scaladoc tag are shared by all test cases. For example:
   *
   * {{{
-  *   import org.scalatest._, Matchers._
+  *   import org.scalatest.FreeSpec
   * }}}
   *
   * Then [[http://www.scalatest.org/user_guide/using_matchers Scalatest matchers]] will be available for all test cases.
@@ -108,12 +110,6 @@ final class example(files: String*) extends StaticAnnotation {
   private def `meta`(tree: Tree): Any = ???
 
   /** Returns a class definition that contains unit cases imported from Scaladoc comments.
-    *
-    * @note This method is the [[http://docs.scala-lang.org/sips/pending/inline-meta.html#macro-annotations inline macro]] implementation of this annotation [[example]].
-    *
-    *       {{{
-    *         "new example().apply(???)" shouldNot compile
-    *       }}}
     */
   @compileTimeOnly("This annoation requires macro-paradise plugin")
   inline def apply(defn: Any): Any = meta {
