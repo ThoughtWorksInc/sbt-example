@@ -1,6 +1,6 @@
 # sbt-example [<img align="right" src="https://www.thoughtworks.com/imgs/tw-logo.png" title="ThoughtWorks" height="15"/>](http://thoughtworks.com)
 
-[![Build Status](https://travis-ci.org/ThoughtWorksInc/sbt-example.svg?branch=master)](https://travis-ci.org/ThoughtWorksInc/sbt-example)
+[![Build Status](https://travis-ci.org/ThoughtWorksInc/sbt-example.svg)](https://travis-ci.org/ThoughtWorksInc/sbt-example)
 
 **sbt-example** is an sbt plug-in for creating unit tests from examples in Scaladoc.
 
