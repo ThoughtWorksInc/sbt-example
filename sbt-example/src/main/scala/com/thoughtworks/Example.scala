@@ -3,11 +3,15 @@ import java.io.File
 
 import sbt.AutoPlugin
 
-import scala.annotation._
 import scala.collection.immutable
 import scala.meta._
 import scala.meta.contrib.{AssociatedComments, DocToken, ScaladocParser}
-import scala.meta.parsers.Parsed.Success
+import scala.meta.internal.parsers.ScalametaParser
+
+import sbt._
+import sbt.Keys._
+import org.scalajs.sbtplugin.{ScalaJSCrossVersion, ScalaJSPlugin}
+import sbt.plugins.JvmPlugin
 
 /** Generates unit tests from examples in Scaladoc in `files`.
   *
@@ -102,194 +106,159 @@ import scala.meta.parsers.Parsed.Success
   *
   * @see [[https://github.com/ThoughtWorksInc/example.scala example.scala on Github]]
   */
-@compileTimeOnly("This annoation requires macro-paradise plugin")
-final class example(files: String*) extends StaticAnnotation {
+object Example extends AutoPlugin {
+  def exampleStats(source: Source): Seq[Stat] = {
+    val comments = AssociatedComments(source)
 
-  // Workaround for https://github.com/scalameta/scalafmt/issues/777
-  private def `inline` = ???
-  private def `meta`(tree: Tree): Any = ???
-
-  /** Returns a class definition that contains unit cases imported from Scaladoc comments.
-    */
-  @compileTimeOnly("This annoation requires macro-paradise plugin")
-  inline def apply(defn: Any): Any = meta {
-    val q"new $annoationName(..$fileAsts)" = this.asInstanceOf[Tree]
-
-    val tests = fileAsts.flatMap { fileAst =>
-      val Lit.String(fileName) = fileAst
-      // Workaround for https://github.com/scalameta/scalameta/issues/874
-      val Success(source) = (Input.File(new File(fileName)), dialects.ParadiseTypelevel212).parse[Source]
-      val comments = AssociatedComments(source)
-
-      def scaladocTestTree(leadingComments: Set[Token.Comment]): List[Stat] = {
-        leadingComments.toList.flatMap { comment =>
-          ScaladocParser.parseScaladoc(comment).toSeq.flatMap { scaladoc =>
-            val (code, trailing, tags) = scaladoc.foldRight[(List[Stat], List[Stat], List[Stat])]((Nil, Nil, Nil)) {
-              case (DocToken(DocToken.CodeBlock, None, Some(codeBlock)),
-                    (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
-                val Success(Term.Block(stats)) =
-                  (Input.String("{\n" + codeBlock + "\n}"), dialects.ParadiseTypelevel212).parse[Stat]
-                (stats ++: codeAccumulator, trailingAccumulator, tagAccumulator)
-              case (DocToken(tagKind: DocToken.TagKind, Some(name), Some(description)),
-                    (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
-                val tag = if (codeAccumulator.nonEmpty) {
-                  q"""
-                    ${Lit.String(s"${tagKind.label} $name")}.in(try {
-                      this.markup($description)
-                      ..$codeAccumulator
-                    } finally {
-                      ..$trailingAccumulator
-                    })
-                  """
-                } else {
-                  q"""
-                    ${Lit.String(s"${tagKind.label} $name")} - {
-                      this.markup($description)
-                      ..$trailingAccumulator
-                    }
-                  """
-                }
-                (Nil, Nil, tag :: tagAccumulator)
-              case (DocToken(tagKind: DocToken.TagKind, None, Some(body)),
-                    (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
-                val tag = if (codeAccumulator.nonEmpty) {
-                  q"""
-                    ${Lit.String(s"${tagKind.label} $body")}.in(try {
-                       ..$codeAccumulator
-                    } finally {
-                      ..$trailingAccumulator
-                    })
-                  """
-                } else {
-                  q"""
-                    ${Lit.String(s"${tagKind.label} $body")} - {
-                      ..$trailingAccumulator
-                    }
-                  """
-                }
-                (Nil, Nil, tag :: tagAccumulator)
-              case (DocToken(tagKind: DocToken.TagKind, name, body),
-                    (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
-                val tag = if (codeAccumulator.nonEmpty) {
-                  q"""
-                    ${Lit.String(tagKind.label)}.-(try {
-                       ..$codeAccumulator
-                    } finally {
-                      ..$trailingAccumulator
-                    })
-                  """
-                } else {
-                  q"""
-                    ${Lit.String(tagKind.label)} - {
-                      ..$trailingAccumulator
-                    }
-                  """
-                }
-                (Nil, Nil, tag :: tagAccumulator)
-              case (DocToken(DocToken.Paragraph, None, None), accumulators) =>
-                accumulators
-              case (otherToken, (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
-                val tokenXml = otherToken match {
-                  case DocToken(DocToken.InheritDoc, None, None) =>
-                    "@inheritdoc"
-                  case DocToken(DocToken.Paragraph, None, Some(text)) =>
-                    <p>{text}</p>
-                  case DocToken(DocToken.Heading, None, Some(text)) =>
-                    <h3>{text}</h3>
-                  case DocToken(DocToken.SubHeading, None, Some(text)) =>
-                    <h4>{text}</h4>
-                  case DocToken(DocToken.Description, None, Some(text)) =>
-                    text
-                  case _ =>
-                    otherToken
-                }
-                val markup = q"this.markup(${tokenXml.toString})"
-                if (codeAccumulator.nonEmpty) {
-                  (markup :: codeAccumulator, trailingAccumulator, tagAccumulator)
-                } else {
-                  (codeAccumulator, markup :: trailingAccumulator, tagAccumulator)
-                }
-            }
-            code ::: trailing ::: tags
+    def scaladocTestTree(leadingComments: Set[Token.Comment]): List[Stat] = {
+      leadingComments.toList.flatMap { comment =>
+        ScaladocParser.parseScaladoc(comment).toSeq.flatMap { scaladoc =>
+          val (code, trailing, tags) = scaladoc.foldRight[(List[Stat], List[Stat], List[Stat])]((Nil, Nil, Nil)) {
+            case (DocToken(DocToken.CodeBlock, None, Some(codeBlock)),
+                  (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
+              val Term.Block(stats) =
+                new ScalametaParser(Input.String("{\n" + codeBlock + "\n}"), dialects.ParadiseTypelevel212).parseStat()
+              (stats ++: codeAccumulator, trailingAccumulator, tagAccumulator)
+            case (DocToken(tagKind: DocToken.TagKind, Some(name), Some(description)),
+                  (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
+              val tag = if (codeAccumulator.nonEmpty) {
+                q"""
+                  ${Lit.String(s"${tagKind.label} $name")}.in(try {
+                    this.markup($description)
+                    ..$codeAccumulator
+                  } finally {
+                    ..$trailingAccumulator
+                  })
+                """
+              } else {
+                q"""
+                  ${Lit.String(s"${tagKind.label} $name")} - {
+                    this.markup($description)
+                    ..$trailingAccumulator
+                  }
+                """
+              }
+              (Nil, Nil, tag :: tagAccumulator)
+            case (DocToken(tagKind: DocToken.TagKind, None, Some(body)),
+                  (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
+              val tag = if (codeAccumulator.nonEmpty) {
+                q"""
+                  ${Lit.String(s"${tagKind.label} $body")}.in(try {
+                     ..$codeAccumulator
+                  } finally {
+                    ..$trailingAccumulator
+                  })
+                """
+              } else {
+                q"""
+                  ${Lit.String(s"${tagKind.label} $body")} - {
+                    ..$trailingAccumulator
+                  }
+                """
+              }
+              (Nil, Nil, tag :: tagAccumulator)
+            case (DocToken(tagKind: DocToken.TagKind, name, body),
+                  (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
+              val tag = if (codeAccumulator.nonEmpty) {
+                q"""
+                  ${Lit.String(tagKind.label)}.-(try {
+                     ..$codeAccumulator
+                  } finally {
+                    ..$trailingAccumulator
+                  })
+                """
+              } else {
+                q"""
+                  ${Lit.String(tagKind.label)} - {
+                    ..$trailingAccumulator
+                  }
+                """
+              }
+              (Nil, Nil, tag :: tagAccumulator)
+            case (DocToken(DocToken.Paragraph, None, None), accumulators) =>
+              accumulators
+            case (otherToken, (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
+              val tokenXml = otherToken match {
+                case DocToken(DocToken.InheritDoc, None, None) =>
+                  "@inheritdoc"
+                case DocToken(DocToken.Paragraph, None, Some(text)) =>
+                  <p>{text}</p>
+                case DocToken(DocToken.Heading, None, Some(text)) =>
+                  <h3>{text}</h3>
+                case DocToken(DocToken.SubHeading, None, Some(text)) =>
+                  <h4>{text}</h4>
+                case DocToken(DocToken.Description, None, Some(text)) =>
+                  text
+                case _ =>
+                  otherToken
+              }
+              val markup = q"this.markup(${tokenXml.toString})"
+              if (codeAccumulator.nonEmpty) {
+                (markup :: codeAccumulator, trailingAccumulator, tagAccumulator)
+              } else {
+                (codeAccumulator, markup :: trailingAccumulator, tagAccumulator)
+              }
           }
+          code ::: trailing ::: tags
         }
       }
+    }
 
-      def testTree(tree: Tree): Seq[Stat] = {
-        def templateTestTree(name: Name, template: Template) = {
-          import template._
-          val title = name.syntax
+    def testTree(tree: Tree): Seq[Stat] = {
+      def templateTestTree(name: Name, template: Template) = {
+        import template._
+        val title = name.syntax
+        q"""$title - {
+          ..${scaladocTestTree(comments.leading(tree))}
+          ..${early.flatMap(testTree)}
+          ..${stats.to[immutable.Seq].flatMap(_.flatMap(testTree))}
+        }""" :: Nil
+      }
+      def leafTestTree(name: Name) = {
+        val title = name.syntax
+        val trees = scaladocTestTree(comments.leading(tree))
+        if (trees.isEmpty) {
+          Nil
+        } else {
           q"""$title - {
-            ..${scaladocTestTree(comments.leading(tree))}
-            ..${early.flatMap(testTree)}
-            ..${stats.to[immutable.Seq].flatMap(_.flatMap(testTree))}
-          }""" :: Nil
-        }
-        def leafTestTree(name: Name) = {
-          val title = name.syntax
-          val trees = scaladocTestTree(comments.leading(tree))
-          if (trees.isEmpty) {
-            Nil
-          } else {
-            q"""$title - {
               ..$trees
             }""" :: Nil
-          }
         }
-        tree match {
-          case Pkg(termRef, children) =>
-            val packageName = termRef.toString
-            q"""$packageName - {
+      }
+      tree match {
+        case Pkg(termRef, children) =>
+          val packageName = termRef.toString
+          q"""$packageName - {
               ..${scaladocTestTree(comments.leading(tree))}
               ..${children.flatMap(testTree)}
             }""" :: Nil
-          case Pkg.Object(_, name, template: Template) =>
-            templateTestTree(name, template)
-          case Defn.Object(_, name, template: Template) =>
-            templateTestTree(name, template)
-          case Defn.Trait(_, name, _, _, template: Template) =>
-            templateTestTree(name, template)
-          case Defn.Class(_, name, _, _, template: Template) =>
-            templateTestTree(name, template)
-          case Defn.Def(_, name, _, _, _, _) =>
-            leafTestTree(name)
-          case Defn.Type(_, name, _, _) =>
-            leafTestTree(name)
-          case Defn.Val(_, Seq(Pat.Var.Term(name)), _, _) =>
-            leafTestTree(name)
-          case Defn.Var(_, Seq(Pat.Var.Term(name)), _, _) =>
-            leafTestTree(name)
-          case Defn.Macro(_, name, _, _, _, _) =>
-            leafTestTree(name)
-          case Ctor.Secondary(_, name, _, _) =>
-            leafTestTree(name)
-          case _ =>
-            Nil
-        }
+        case Pkg.Object(_, name, template: Template) =>
+          templateTestTree(name, template)
+        case Defn.Object(_, name, template: Template) =>
+          templateTestTree(name, template)
+        case Defn.Trait(_, name, _, _, template: Template) =>
+          templateTestTree(name, template)
+        case Defn.Class(_, name, _, _, template: Template) =>
+          templateTestTree(name, template)
+        case Defn.Def(_, name, _, _, _, _) =>
+          leafTestTree(name)
+        case Defn.Type(_, name, _, _) =>
+          leafTestTree(name)
+        case Defn.Val(_, Seq(Pat.Var.Term(name)), _, _) =>
+          leafTestTree(name)
+        case Defn.Var(_, Seq(Pat.Var.Term(name)), _, _) =>
+          leafTestTree(name)
+        case Defn.Macro(_, name, _, _, _, _) =>
+          leafTestTree(name)
+        case Ctor.Secondary(_, name, _, _) =>
+          leafTestTree(name)
+        case _ =>
+          Nil
       }
-      source.stats.flatMap(testTree)
-    };
-
-    {
-      val Defn.Class(mods, name, tparams, ctor, Template(early, parents, self, stats)) = defn.asInstanceOf[Tree]
-      import scala.reflect.runtime.universe.TypeName
-      // Workaround for https://github.com/scalameta/scalameta/issues/931
-      val workaround931Name = Type.Name(TypeName(name.value).encodedName.toString)
-      val mergedStats = Some(stats.getOrElse(Nil) ++ tests)
-      Defn.Class(mods, workaround931Name, tparams, ctor, Template(early, parents, self, mergedStats))
     }
+    source.stats.flatMap(testTree)
+
   }
-}
-
-
-import sbt._
-import Keys._
-import org.scalajs.sbtplugin.{ScalaJSCrossVersion, ScalaJSPlugin}
-import sbt.plugins.JvmPlugin
-import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
-import org.scalajs.sbtplugin.impl.ScalaJSGroupID
-
-object Example extends AutoPlugin {
 
   override def trigger: PluginTrigger = noTrigger
 
@@ -298,28 +267,27 @@ object Example extends AutoPlugin {
   object autoImport {
     val generateExample = taskKey[Seq[File]]("Generate unit tests from examples in Scaladoc.")
     val exampleSuperTypes =
-      taskKey[Seq[String]]("Super types of the generated unit suite class for examples in Scaladoc.")
+      taskKey[List[scala.meta.Ctor.Call]](
+        "Super types of the generated unit test suite class for examples in Scaladoc.")
+    val examplePackageRef =
+      taskKey[Term.Ref]("The package of the generated unit test suite class for examples in Scaladoc.")
+    val exampleClassRef =
+      taskKey[Type.Name]("The class name of the generated unit test suite class for examples in Scaladoc.")
   }
   import autoImport._
 
   override def globalSettings: Seq[Def.Setting[_]] = Seq(
-    exampleSuperTypes := Seq("_root_.org.scalatest.FreeSpec", "_root_.org.scalatest.Matchers")
+    exampleSuperTypes := List(ctor"_root_.org.scalatest.FreeSpec", ctor"_root_.org.scalatest.Matchers")
   )
 
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
-    libraryDependencies += {
-      if (scalaBinaryVersion.value == "2.10") {
-        compilerPlugin(("org.scalamacros" % "paradise" % "2.1.1").cross(CrossVersion.patch))
-      } else {
-        compilerPlugin(("org.scalameta" % "paradise" % "latest.release").cross(CrossVersion.patch))
-      }
+    exampleClassRef := {
+      import scala.reflect.runtime.universe._
+      Type.Name(TypeName(raw"""${name.value}Example""").encodedName.toString)
     },
-    libraryDependencies ++= {
-      if (scalaBinaryVersion.value == "2.10") {
-        Nil
-      } else {
-        Seq("com.thoughtworks.example" %% "example" % "2.0.0" % Test)
-      }
+    examplePackageRef := {
+      new ScalametaParser(Input.String(organization.value), dialects.ParadiseTypelevel212)
+        .parseRule(_.path(thisOK = false))
     },
     libraryDependencies += {
       if (ScalaJSPlugin.AutoImport.isScalaJSProject.?.value.getOrElse(false)) {
@@ -328,23 +296,21 @@ object Example extends AutoPlugin {
         "org.scalatest" %% "scalatest" % "3.0.4" % Test
       }
     },
-    name in generateExample := raw"""${(name in generateExample).value}ScaladocExample""",
     generateExample := {
       val outputFile = (sourceManaged in Test).value / raw"""${(name in generateExample).value}.scala"""
-      val fileNames = (unmanagedSources in Compile).value
-        .map { file =>
-          import scala.reflect.runtime.universe._
-          Literal(Constant(file.toString))
+      val content = (unmanagedSources in Compile).value.view.flatMap { file =>
+        // Workaround for https://github.com/scalameta/scalameta/issues/874
+        val source = new ScalametaParser(Input.File(file), dialects.ParadiseTypelevel212).parseSource()
+        exampleStats(source)
+      }.toList
+      val generatedFileTree = q"""
+        package ${examplePackageRef.value} {
+          final class ${exampleClassRef.value} extends ..${exampleSuperTypes.value} {
+            ..${content}
+          }
         }
-        .mkString(",")
-      import scala.reflect.runtime.universe._
-      val className = newTypeName((name in generateExample).value).encodedName
-      val fileContent = raw"""
-        package ${(organization in generateExample).value};
-        @_root_.com.thoughtworks.example($fileNames)
-        final class $className extends ${exampleSuperTypes.value.mkString(" with ")}
       """
-      IO.write(outputFile, fileContent, scala.io.Codec.UTF8.charSet)
+      IO.write(outputFile, generatedFileTree.syntax, scala.io.Codec.UTF8.charSet)
       Seq(outputFile)
     },
     (sourceGenerators in Test) ++= {
