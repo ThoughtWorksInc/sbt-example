@@ -15,3 +15,7 @@ The previous version of this project is the macro annotation [`@example`](https:
 * [PartialApply](https://javadoc.io/page/com.thoughtworks.feature/the_2.12/latest/com/thoughtworks/feature/PartialApply.html) - a dependent-type type class for partial applying a function, whose Scaladoc is written in [Given-When-Then](https://martinfowler.com/bliki/GivenWhenThen.html) style.
 
 (Feel free to add your Scaladoc here)
+
+## Requirements
+
+* Sbt 1.x
