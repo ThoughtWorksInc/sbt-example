@@ -247,21 +247,67 @@ object Example extends AutoPlugin {
 
   override def requires: Plugins = JvmPlugin
 
-  /** Contains sbt setting keys */
+  /** Contains sbt setting keys, which will be automatically in your `build.sbt`.
+    *
+    * You need to manually import this [[autoImport]] object in `.scala` files, e.g. an sbt plugin, or this Scaladoc.
+    *
+    * {{{
+    * import com.thoughtworks.Example.autoImport._
+    * }}}
+    */
   object autoImport {
     /** Generate unit tests from examples in Scaladoc. */
     val generateExample = taskKey[Seq[File]]("Generate unit tests from examples in Scaladoc.")
    
-    /** Super types of the generated unit test suite class for examples in Scaladoc. */
+    /** Super types of the generated unit test suite class for examples in Scaladoc.
+      *
+      * @example The default value of this [[exampleSuperTypes]] settings are
+      *          [[org.scalatest.FreeSpec]] and [[org.scalatest.Matchers]].
+      *
+      *          You may want to replace [[org.scalatest.FreeSpec]] to [[org.scalatest.AsyncFreeSpec]]
+      *          for asynchronous tests:
+      *
+      *          {{{
+      *          import scala.meta._
+      *          exampleSuperTypes := exampleSuperTypes.value.map {
+      *            case ctor"_root_.org.scalatest.FreeSpec" =>
+      *              ctor"_root_.org.scalatest.AsyncFreeSpec"
+      *            case otherTrait =>
+      *              otherTrait
+      *          }
+      *          }}}
+      *
+      *          Note that each super type can be built from a [[scala.meta.XtensionQuasiquoteCtor.ctor ctor]] quasiquote.
+      *
+      */
     val exampleSuperTypes =
       taskKey[List[scala.meta.Ctor.Call]](
         "Super types of the generated unit test suite class for examples in Scaladoc.")
 
-    /** The package of the generated unit test suite class for examples in Scaladoc. */
+    /** The package of the generated unit test suite class for examples in Scaladoc.
+      *
+      * @example The value for this [[examplePackageRef]] setting can be built from
+      *          a [[scala.meta.XtensionQuasiquoteTerm.q q]] quasiquote:
+      *
+      *          {{{
+      *          import scala.meta._
+      *          examplePackageRef := q"_root_.com.yourpackagename.yourlibraryname"
+      *          }}}
+      */
     val examplePackageRef =
       taskKey[Term.Ref]("The package of the generated unit test suite class for examples in Scaladoc.")
    
-    /** The class name of the generated unit test suite class for examples in Scaladoc. */
+    /** The class name of the generated unit test suite class for examples in Scaladoc.
+      *
+      * @example The value for this [[exampleClassRef]] setting can be built from
+      *          a [[scala.meta.XtensionQuasiquoteType.t t]] quasiquote:
+      *
+      *          {{{
+      *          import scala.meta._
+      *          exampleClassRef := t"YourTestClassName"
+      *          }}}
+      *
+      */
     val exampleClassRef =
       taskKey[Type.Name]("The class name of the generated unit test suite class for examples in Scaladoc.")
   }
