@@ -87,6 +87,7 @@ import sbt.plugins.JvmPlugin
   * @author 杨博 (Yang Bo) &lt;pop.atry@gmail.com&gt;
   *
   * @see [[https://github.com/ThoughtWorksInc/sbt-example sbt-example on Github]]
+  * @see [[autoImport]] for available sbt settings.
   */
 object Example extends AutoPlugin {
   def exampleStats(source: Source): Seq[Stat] = {
@@ -246,13 +247,21 @@ object Example extends AutoPlugin {
 
   override def requires: Plugins = JvmPlugin
 
+  /** Contains sbt setting keys */
   object autoImport {
+    /** Generate unit tests from examples in Scaladoc. */
     val generateExample = taskKey[Seq[File]]("Generate unit tests from examples in Scaladoc.")
+   
+    /** Super types of the generated unit test suite class for examples in Scaladoc. */
     val exampleSuperTypes =
       taskKey[List[scala.meta.Ctor.Call]](
         "Super types of the generated unit test suite class for examples in Scaladoc.")
+
+    /** The package of the generated unit test suite class for examples in Scaladoc. */
     val examplePackageRef =
       taskKey[Term.Ref]("The package of the generated unit test suite class for examples in Scaladoc.")
+   
+    /** The class name of the generated unit test suite class for examples in Scaladoc. */
     val exampleClassRef =
       taskKey[Type.Name]("The class name of the generated unit test suite class for examples in Scaladoc.")
   }
