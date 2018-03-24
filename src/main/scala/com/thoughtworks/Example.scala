@@ -86,7 +86,7 @@ import sbt.plugins.JvmPlugin
   *
   * @author 杨博 (Yang Bo) &lt;pop.atry@gmail.com&gt;
   *
-  * @see [[https://github.com/ThoughtWorksInc/example.scala example.scala on Github]]
+  * @see [[https://github.com/ThoughtWorksInc/sbt-example sbt-example on Github]]
   */
 object Example extends AutoPlugin {
   def exampleStats(source: Source): Seq[Stat] = {
