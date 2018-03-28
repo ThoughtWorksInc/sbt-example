@@ -7,11 +7,12 @@ import scala.collection.immutable
 import scala.meta._
 import scala.meta.contrib.{AssociatedComments, DocToken, ScaladocParser}
 import scala.meta.internal.parsers.ScalametaParser
-
 import sbt._
 import sbt.Keys._
 import org.scalajs.sbtplugin.{ScalaJSCrossVersion, ScalaJSPlugin}
 import sbt.plugins.JvmPlugin
+
+import scala.meta.internal.tokenizers.PlatformTokenizerCache
 
 /** Generates unit tests from examples in Scaladoc in `files`.
   *
@@ -334,6 +335,7 @@ object Example extends AutoPlugin {
       }
     },
     generateExample := {
+      PlatformTokenizerCache.megaCache.clear()
       val outputFile = (sourceManaged in Test).value / raw"""${(name in generateExample).value}.scala"""
       val content = (unmanagedSources in Compile).value.view.flatMap { file =>
         // Workaround for https://github.com/scalameta/scalameta/issues/874
