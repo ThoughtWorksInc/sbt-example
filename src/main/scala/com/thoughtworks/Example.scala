@@ -18,8 +18,8 @@ import scala.meta.internal.tokenizers.PlatformTokenizerCache
   *
   * = Getting started =
   *
-  * Suppose you have a source file `src/main/scala/yourPackage/YourClass.scala`,
-  * which contains some code examples in its Scaladoc.
+  * Suppose you have some source files under `src/main/scala`,
+  * which contain some code examples in their Scaladoc.
   * You can run those examples as test cases with this library.
   *
   * == Step 1: Add this plug-in in your sbt settings ==
