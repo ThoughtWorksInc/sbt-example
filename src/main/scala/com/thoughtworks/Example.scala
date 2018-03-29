@@ -52,7 +52,7 @@ import scala.meta.internal.tokenizers.PlatformTokenizerCache
   *
   * Then the name `FreeSpec` will be available for all test cases.
   *
-  * @note A variable defined under a Scaladoc tag is not accessible from code blocks under another tags.
+  * @note A variable defined under a Scaladoc tag is not accessible from code blocks under another tag.
   *
   *       {{{
   *         "i" shouldNot compile
