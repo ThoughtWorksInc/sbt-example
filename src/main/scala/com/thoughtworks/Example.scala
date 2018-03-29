@@ -300,17 +300,20 @@ object Example extends AutoPlugin {
    
     /** The class name of the generated unit test suite class for examples in Scaladoc.
       *
-      * @example The value for this [[exampleClassRef]] setting can be built from
+      * @example The value for this [[exampleClassName]] setting can be built from
       *          a [[scala.meta.XtensionQuasiquoteType.t t]] quasiquote:
       *
       *          {{{
       *          import scala.meta._
-      *          exampleClassRef := t"YourTestClassName"
+      *          exampleClassName := t"YourTestClassName"
       *          }}}
       *
       */
-    val exampleClassRef =
+    val exampleClassName =
       taskKey[Type.Name]("The class name of the generated unit test suite class for examples in Scaladoc.")
+   
+    @deprecated(since="4.1.0", message="Use `exampleClassName` instead.")
+    val exampleClassRef = exampleClassName
   }
   import autoImport._
 
@@ -319,7 +322,7 @@ object Example extends AutoPlugin {
   )
 
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
-    exampleClassRef := {
+    exampleClassName := {
       import scala.reflect.runtime.universe._
       Type.Name(TypeName(raw"""${name.value}Example""").encodedName.toString)
     },
@@ -344,7 +347,7 @@ object Example extends AutoPlugin {
       }.toList
       val generatedFileTree = q"""
         package ${examplePackageRef.value} {
-          final class ${exampleClassRef.value} extends ..${exampleSuperTypes.value} {
+          final class ${exampleClassName.value} extends ..${exampleSuperTypes.value} {
             ..${content}
           }
         }
