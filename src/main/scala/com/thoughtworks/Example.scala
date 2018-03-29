@@ -280,6 +280,14 @@ object Example extends AutoPlugin {
       *
       *          Note that each super type can be built from a [[scala.meta.XtensionQuasiquoteCtor.ctor ctor]] quasiquote.
       *
+      * @example You can introduce more ScalaTest DSL by adding more mixed-in traits
+      *
+      *          {{{
+      *          import scala.meta._
+      *          exampleSuperTypes += ctor"_root_.org.scalatest.Inside"
+      *          }}}
+      *
+      *          Then the [[org.scalatest.Inside.inside inside]] function should be available for your Scaladoc examples.
       */
     val exampleSuperTypes =
       taskKey[List[scala.meta.Ctor.Call]](
