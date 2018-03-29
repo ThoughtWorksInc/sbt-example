@@ -248,7 +248,7 @@ object Example extends AutoPlugin {
 
   override def requires: Plugins = JvmPlugin
 
-  /** Contains sbt setting keys, which will be automatically in your `build.sbt`.
+  /** Contains sbt setting keys, which will be automatically imported into your `build.sbt`.
     *
     * You need to manually import this [[autoImport]] object in `.scala` files, e.g. an sbt plugin, or this Scaladoc.
     *
