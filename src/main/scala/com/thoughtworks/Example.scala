@@ -14,7 +14,7 @@ import sbt.plugins.JvmPlugin
 
 import scala.meta.internal.tokenizers.PlatformTokenizerCache
 
-/** Generates unit tests from examples in Scaladoc in `files`.
+/** Generates unit tests from examples in Scaladoc.
   *
   * = Getting started =
   *
