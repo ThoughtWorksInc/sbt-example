@@ -1,7 +1,5 @@
 organization in ThisBuild := "com.thoughtworks.example"
 
-crossScalaVersions := Seq("2.12.4")
-
 sbtPlugin := true
 
 name := "sbt-example"
