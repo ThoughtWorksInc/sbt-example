@@ -77,7 +77,7 @@ import scala.meta.internal.tokenizers.PlatformTokenizerCache
   *
   * @example A code block under a Scaladoc tag is a test case.
   *
-  *          The test case is inside a [[org.scalatest.FreeSpec]]
+  *          The test case is inside an [[org.scalatest.FreeSpec]]
   *
   *          {{{
   *            this should be(a[FreeSpec])
