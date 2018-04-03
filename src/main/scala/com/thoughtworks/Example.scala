@@ -347,7 +347,7 @@ object Example extends AutoPlugin {
     },
     generateExample := {
       PlatformTokenizerCache.megaCache.clear()
-      val outputFile = (sourceManaged in Test).value / raw"""${(name in generateExample).value}.scala"""
+      val outputFile = (sourceManaged in Test).value / "sbt-example-generated.scala"
       val content = (unmanagedSources in Compile).value.view.flatMap { file =>
         // Workaround for https://github.com/scalameta/scalameta/issues/874
         val source = new ScalametaParser(Input.File(file), dialects.ParadiseTypelevel212).parseSource()
