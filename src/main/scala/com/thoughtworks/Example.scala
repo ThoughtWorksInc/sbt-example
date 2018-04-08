@@ -340,9 +340,9 @@ object Example extends AutoPlugin {
     },
     libraryDependencies += {
       if (ScalaJSPlugin.AutoImport.isScalaJSProject.?.value.getOrElse(false)) {
-        "org.scalatest" % "scalatest" % "3.0.4" % Test cross ScalaJSCrossVersion.binary
+        "org.scalatest" % "scalatest" % "3.0.5" % Test cross ScalaJSCrossVersion.binary
       } else {
-        "org.scalatest" %% "scalatest" % "3.0.4" % Test
+        "org.scalatest" %% "scalatest" % "3.0.5" % Test
       }
     },
     generateExample := {
