@@ -13,6 +13,7 @@ import org.scalajs.sbtplugin.{ScalaJSCrossVersion, ScalaJSPlugin}
 import sbt.plugins.JvmPlugin
 
 import scala.meta.internal.tokenizers.PlatformTokenizerCache
+import scala.reflect.NameTransformer
 
 /** Generates unit tests from examples in Scaladoc.
   *
@@ -28,7 +29,7 @@ import scala.meta.internal.tokenizers.PlatformTokenizerCache
   * // project/plugins.sbt
   * addSbtPlugin("com.thoughtworks.example" % "sbt-example" % "latest.release")
   * </pre>`
-  
+
   * `<pre>
   * // build.sbt
   * enablePlugins(Example)
@@ -257,9 +258,10 @@ object Example extends AutoPlugin {
     * }}}
     */
   object autoImport {
+
     /** Generate unit tests from examples in Scaladoc. */
     val generateExample = taskKey[Seq[File]]("Generate unit tests from examples in Scaladoc.")
-   
+
     /** Super types of the generated unit test suite class for examples in Scaladoc.
       *
       * @example The default value of this [[exampleSuperTypes]] settings are
@@ -305,7 +307,7 @@ object Example extends AutoPlugin {
       */
     val examplePackageRef =
       taskKey[Term.Ref]("The package of the generated unit test suite class for examples in Scaladoc.")
-   
+
     /** The class name of the generated unit test suite class for examples in Scaladoc.
       *
       * @example The value for this [[exampleClassName]] setting can be built from
@@ -319,8 +321,8 @@ object Example extends AutoPlugin {
       */
     val exampleClassName =
       taskKey[Type.Name]("The class name of the generated unit test suite class for examples in Scaladoc.")
-   
-    @deprecated(since="4.1.0", message="Use `exampleClassName` instead.")
+
+    @deprecated(since = "4.1.0", message = "Use `exampleClassName` instead.")
     val exampleClassRef = exampleClassName
   }
   import autoImport._
@@ -331,12 +333,17 @@ object Example extends AutoPlugin {
 
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
     exampleClassName := {
-      import scala.reflect.runtime.universe._
-      Type.Name(TypeName(raw"""${name.value}Example""").encodedName.toString)
+      val splitName = name.value.split('-')
+      Type.Name(NameTransformer.encode(raw"""${splitName.last}Example"""))
     },
     examplePackageRef := {
-      new ScalametaParser(Input.String(organization.value), dialects.ParadiseTypelevel212)
+      val organizationPackageRef = new ScalametaParser(Input.String(organization.value), dialects.ParadiseTypelevel212)
         .parseRule(_.path(thisOK = false))
+      val splitName = name.value.split('-')
+      splitName.view(0, splitName.length - 1).foldLeft(organizationPackageRef) { (packageRef, subpackage) =>
+        q"$packageRef.${Term.Name(subpackage)}"
+      }
+
     },
     libraryDependencies += {
       if (ScalaJSPlugin.AutoImport.isScalaJSProject.?.value.getOrElse(false)) {
