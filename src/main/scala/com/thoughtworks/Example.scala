@@ -1,17 +1,16 @@
 package com.thoughtworks
 import java.io.File
 
-import sbt.AutoPlugin
+import org.scalajs.sbtplugin.ScalaJSPlugin
+import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
+import sbt.Keys._
+import sbt._
+import sbt.plugins.JvmPlugin
 
 import scala.collection.immutable
 import scala.meta._
 import scala.meta.contrib.{AssociatedComments, DocToken, ScaladocParser}
 import scala.meta.internal.parsers.ScalametaParser
-import sbt._
-import sbt.Keys._
-import org.scalajs.sbtplugin.{ScalaJSCrossVersion, ScalaJSPlugin}
-import sbt.plugins.JvmPlugin
-
 import scala.meta.internal.tokenizers.PlatformTokenizerCache
 import scala.reflect.NameTransformer
 
@@ -346,11 +345,7 @@ object Example extends AutoPlugin {
 
     },
     libraryDependencies += {
-      if (ScalaJSPlugin.AutoImport.isScalaJSProject.?.value.getOrElse(false)) {
-        "org.scalatest" % "scalatest" % "3.0.5" % Test cross ScalaJSCrossVersion.binary
-      } else {
-        "org.scalatest" %% "scalatest" % "3.0.5" % Test
-      }
+      toScalaJSGroupID("org.scalatest") %%% "scalatest" % "3.0.5" % Test
     },
     generateExample := {
       PlatformTokenizerCache.megaCache.clear()

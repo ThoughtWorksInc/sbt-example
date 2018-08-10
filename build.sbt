@@ -4,7 +4,7 @@ sbtPlugin := true
 
 name := "sbt-example"
 
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.21")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.24")
 
 libraryDependencies += "org.scalameta" %% "contrib" % "1.7.0"
 
