@@ -1,8 +1,6 @@
 package com.thoughtworks
 import java.io.File
 
-import org.scalajs.sbtplugin.ScalaJSPlugin
-import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 import sbt.Keys._
 import sbt._
 import sbt.plugins.JvmPlugin
@@ -58,7 +56,6 @@ import scala.reflect.NameTransformer
   *       {{{
   *         "i" shouldNot compile
   *       }}}
-  *
   * @example A code block may define variables.
   *
   *          {{{
@@ -75,7 +72,6 @@ import scala.reflect.NameTransformer
   *          {{{
   *            s should be("text")
   *          }}}
-  *
   * @example A code block under a Scaladoc tag is a test case.
   *
   *          The test case is inside an [[org.scalatest.FreeSpec]]
@@ -83,15 +79,13 @@ import scala.reflect.NameTransformer
   *          {{{
   *            this should be(a[FreeSpec])
   *          }}}
-  *
   * @param files Source files that contain Scaladoc to import
-  *
   * @author 杨博 (Yang Bo) &lt;pop.atry@gmail.com&gt;
-  *
   * @see [[https://github.com/ThoughtWorksInc/sbt-example sbt-example on Github]]
   * @see [[autoImport]] for available sbt settings.
   */
 object Example extends AutoPlugin {
+
   def exampleStats(source: Source): Seq[Stat] = {
     val comments = AssociatedComments(source)
 
