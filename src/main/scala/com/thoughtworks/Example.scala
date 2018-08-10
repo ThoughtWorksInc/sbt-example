@@ -316,7 +316,7 @@ object Example extends AutoPlugin {
     val exampleClassName =
       taskKey[Type.Name]("The class name of the generated unit test suite class for examples in Scaladoc.")
 
-    @deprecated(since = "4.1.0", message = "Use `exampleClassName` instead.")
+    @deprecated("4.1.0", "Use `exampleClassName` instead.")
     val exampleClassRef = exampleClassName
   }
   import autoImport._
