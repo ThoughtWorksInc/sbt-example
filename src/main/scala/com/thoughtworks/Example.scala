@@ -28,10 +28,11 @@ import scala.reflect.NameTransformer
   * // project/plugins.sbt
   * addSbtPlugin("com.thoughtworks.example" % "sbt-example" % "latest.release")
   * </pre>`
-
+  *
   * `<pre>
   * // build.sbt
   * enablePlugins(Example)
+  * libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % Test
   * </pre>`
   *
   * == Step 2: Run tests ==
@@ -343,9 +344,6 @@ object Example extends AutoPlugin {
         q"$packageRef.${Term.Name(subpackage)}"
       }
 
-    },
-    libraryDependencies += {
-      toScalaJSGroupID("org.scalatest") %%% "scalatest" % "3.0.5" % Test
     },
     generateExample := {
       PlatformTokenizerCache.megaCache.clear()
