@@ -79,7 +79,6 @@ import scala.reflect.NameTransformer
   *          {{{
   *            this should be(a[FreeSpec])
   *          }}}
-  * @param files Source files that contain Scaladoc to import
   * @author 杨博 (Yang Bo) &lt;pop.atry@gmail.com&gt;
   * @see [[https://github.com/ThoughtWorksInc/sbt-example sbt-example on Github]]
   * @see [[autoImport]] for available sbt settings.
