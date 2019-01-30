@@ -85,7 +85,7 @@ import scala.reflect.NameTransformer
   */
 object Example extends AutoPlugin {
 
-  def exampleStats(source: Source): Seq[Stat] = {
+  def exampleStats(source: Source, logger: Logger): Seq[Stat] = {
     val comments = AssociatedComments(source)
 
     def scaladocTestTree(leadingComments: Set[Token.Comment]): List[Stat] = {
@@ -166,6 +166,10 @@ object Example extends AutoPlugin {
                 case DocToken(DocToken.SubHeading, None, Some(text)) =>
                   <h4>{text}</h4>
                 case DocToken(DocToken.Description, None, Some(text)) =>
+                  if (text.startsWith("@")) {
+                    logger.warn(
+                      s"Invalid Scaladoc tag detected at ${comment.pos} (missing parameters for the tag?): \n\t$text")
+                  }
                   text
                 case _ =>
                   otherToken
@@ -341,10 +345,11 @@ object Example extends AutoPlugin {
     generateExample := {
       PlatformTokenizerCache.megaCache.clear()
       val outputFile = (sourceManaged in Test).value / "sbt-example-generated.scala"
+      val logger = (streams in generateExample).value.log
       val content = (unmanagedSources in Compile).value.view.flatMap { file =>
         // Workaround for https://github.com/scalameta/scalameta/issues/874
         val source = new ScalametaParser(Input.File(file), dialects.ParadiseTypelevel212).parseSource()
-        exampleStats(source)
+        exampleStats(source, logger)
       }.toList
       val generatedFileTree = q"""
         package ${examplePackageRef.value} {
