@@ -30,7 +30,7 @@ import scala.reflect.NameTransformer
   * `<pre>
   * // build.sbt
   * enablePlugins(Example)
-  * libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % Test
+  * libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.6" % Test
   * </pre>`
   *
   * == Step 2: Run tests ==
