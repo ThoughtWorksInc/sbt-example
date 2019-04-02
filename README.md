@@ -1,7 +1,7 @@
 # sbt-example [<img align="right" src="https://www.thoughtworks.com/imgs/tw-logo.png" title="ThoughtWorks" height="15"/>](http://thoughtworks.com)
 
 [![Build Status](https://travis-ci.org/ThoughtWorksInc/sbt-example.svg)](https://travis-ci.org/ThoughtWorksInc/sbt-example)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.thoughtworks.sbt-scala-js-map/sbt-scala-js-map/badge.svg)](https://search.maven.org/search?q=g:com.thoughtworks.example%20AND%20a:sbt-example&core=gav)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.thoughtworks.example/sbt-example/badge.svg)](https://search.maven.org/search?q=g:com.thoughtworks.example%20AND%20a:sbt-example&core=gav)
 
 **sbt-example** is an sbt plug-in for creating unit tests from examples in Scaladoc.
 
