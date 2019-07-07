@@ -13,6 +13,7 @@ The previous version of this project is the macro annotation [`@example`](https:
 * [Factory](https://javadoc.io/page/com.thoughtworks.feature/the_2.12/latest/com/thoughtworks/feature/Factory.html) - a dependent-type type class for dependency injection, whose Scaladoc contains a huge number of small usecases.
 * [PartialApply](https://javadoc.io/page/com.thoughtworks.feature/the_2.12/latest/com/thoughtworks/feature/PartialApply.html) - a dependent-type type class for partial applying a function, whose Scaladoc is written in [Given-When-Then](https://martinfowler.com/bliki/GivenWhenThen.html) style.
 * [NullSafe](https://javadoc.io/page/com.thoughtworks.dsl/dsl_2.12/latest/com/thoughtworks/dsl/keywords/NullSafe.html) - a library to provide Kotlin / Groovy flavored null-safe `?` operator in Scala.
+* [scalajs-all-in-one-template](https://github.com/Atry/scalajs-all-in-one-template/blob/master/js/src/main/scala/views/Main.scala) - a project template for Scala.js static web projects, whose Scaladoc contains examples executed in [jsdom](https://github.com/jsdom/jsdom).
 
 (Feel free to add your Scaladoc here)
 
