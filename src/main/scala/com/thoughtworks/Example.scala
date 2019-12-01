@@ -46,7 +46,7 @@ import scala.reflect.NameTransformer
   * Code blocks before any Scaladoc tag are shared by all test cases. For example:
   *
   * {{{
-  * import org.scalatest.FreeSpec
+  * import org.scalatest.freespec.AnyFreeSpec
   * }}}
   *
   * Then the name `FreeSpec` will be available for all test cases.
@@ -74,10 +74,10 @@ import scala.reflect.NameTransformer
   *          }}}
   * @example A code block under a Scaladoc tag is a test case.
   *
-  *          The test case is inside an [[org.scalatest.FreeSpec]]
+  *          The test case is inside an [[org.scalatest.freespec.AnyFreeSpec]]
   *
   *          {{{
-  *            this should be(a[FreeSpec])
+  *            this should be(an[AnyFreeSpec])
   *          }}}
   * @author 杨博 (Yang Bo) &lt;pop.atry@gmail.com&gt;
   * @see [[https://github.com/ThoughtWorksInc/sbt-example sbt-example on Github]]
@@ -262,16 +262,16 @@ object Example extends AutoPlugin {
     /** Super types of the generated unit test suite class for examples in Scaladoc.
       *
       * @example The default value of this [[exampleSuperTypes]] settings are
-      *          [[org.scalatest.FreeSpec]] and [[org.scalatest.Matchers]].
+      *          [[org.scalatest.freespec.AnyFreeSpec]] and [[org.scalatest.matchers.should.Matchers]].
       *
-      *          You may want to replace [[org.scalatest.FreeSpec]] to [[org.scalatest.AsyncFreeSpec]]
+      *          You may want to replace [[org.scalatest.freespec.AnyFreeSpec]] to [[org.scalatest.freespec.AsyncFreeSpec]]
       *          for asynchronous tests:
       *
       *          {{{
       *          import scala.meta._
       *          exampleSuperTypes := exampleSuperTypes.value.map {
-      *            case ctor"_root_.org.scalatest.FreeSpec" =>
-      *              ctor"_root_.org.scalatest.AsyncFreeSpec"
+      *            case ctor"_root_.org.scalatest.freespec.AnyFreeSpec" =>
+      *              ctor"_root_.org.scalatest.freespec.AsyncFreeSpec"
       *            case otherTrait =>
       *              otherTrait
       *          }
@@ -325,7 +325,7 @@ object Example extends AutoPlugin {
   import autoImport._
 
   override def globalSettings: Seq[Def.Setting[_]] = Seq(
-    exampleSuperTypes := List(ctor"_root_.org.scalatest.FreeSpec", ctor"_root_.org.scalatest.Matchers")
+    exampleSuperTypes := List(ctor"_root_.org.scalatest.freespec.AnyFreeSpec", ctor"_root_.org.scalatest.matchers.should.Matchers")
   )
 
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
