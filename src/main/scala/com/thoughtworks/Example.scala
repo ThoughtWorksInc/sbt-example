@@ -361,12 +361,8 @@ object Example extends AutoPlugin {
       IO.write(outputFile, generatedFileTree.syntax, scala.io.Codec.UTF8.charSet)
       Seq(outputFile)
     },
-    (sourceGenerators in Test) ++= {
-      if (scalaBinaryVersion.value == "2.10") {
-        Nil
-      } else {
-        Seq(generateExample.taskValue)
-      }
+    (sourceGenerators in Test) += {
+      generateExample.taskValue
     }
   )
 }
