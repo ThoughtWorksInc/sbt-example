@@ -1,6 +1,8 @@
-organization in ThisBuild := "com.thoughtworks.example"
+enablePlugins(SbtPlugin)
 
-sbtPlugin := true
+scriptedLaunchOpts += "-Dplugin.version=" + version.value
+
+organization in ThisBuild := "com.thoughtworks.example"
 
 name := "sbt-example"
 
