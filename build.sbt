@@ -6,7 +6,7 @@ organization in ThisBuild := "com.thoughtworks.example"
 
 name := "sbt-example"
 
-libraryDependencies += "org.scalameta" %% "contrib" % "1.7.0"
+libraryDependencies += "org.scalameta" %% "contrib" % "4.1.6"
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.0.1"
 

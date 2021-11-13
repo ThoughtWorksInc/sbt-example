@@ -161,10 +161,18 @@ object Example extends AutoPlugin {
                   "@inheritdoc"
                 case DocToken(DocToken.Paragraph, None, Some(text)) =>
                   <p>{text}</p>
-                case DocToken(DocToken.Heading, None, Some(text)) =>
+                case DocToken(DocToken.Heading1, None, Some(text)) =>
+                  <h1>{text}</h1>
+                case DocToken(DocToken.Heading2, None, Some(text)) =>
+                  <h2>{text}</h2>
+                case DocToken(DocToken.Heading3, None, Some(text)) =>
                   <h3>{text}</h3>
-                case DocToken(DocToken.SubHeading, None, Some(text)) =>
+                case DocToken(DocToken.Heading4, None, Some(text)) =>
                   <h4>{text}</h4>
+                case DocToken(DocToken.Heading5, None, Some(text)) =>
+                  <h5>{text}</h5>
+                case DocToken(DocToken.Heading6, None, Some(text)) =>
+                  <h6>{text}</h6>
                 case DocToken(DocToken.Description, None, Some(text)) =>
                   if (text.startsWith("@")) {
                     logger.warn(
@@ -192,8 +200,8 @@ object Example extends AutoPlugin {
         val title = name.syntax
         q"""$title - {
           ..${scaladocTestTree(comments.leading(tree))}
-          ..${early.flatMap(testTree)}
-          ..${stats.to[immutable.Seq].flatMap(_.flatMap(testTree))}
+          ..${template.early.flatMap(testTree)}
+          ..${template.stats.flatMap(testTree)}
         }""" :: Nil
       }
       def leafTestTree(name: Name) = {
@@ -226,13 +234,13 @@ object Example extends AutoPlugin {
           leafTestTree(name)
         case Defn.Type(_, name, _, _) =>
           leafTestTree(name)
-        case Defn.Val(_, Seq(Pat.Var.Term(name)), _, _) =>
+        case Defn.Val(_, Seq(Pat.Var(name)), _, _) =>
           leafTestTree(name)
-        case Defn.Var(_, Seq(Pat.Var.Term(name)), _, _) =>
+        case Defn.Var(_, Seq(Pat.Var(name)), _, _) =>
           leafTestTree(name)
         case Defn.Macro(_, name, _, _, _, _) =>
           leafTestTree(name)
-        case Ctor.Secondary(_, name, _, _) =>
+        case Ctor.Secondary(_, name, _, _, _) =>
           leafTestTree(name)
         case _ =>
           Nil
@@ -270,32 +278,31 @@ object Example extends AutoPlugin {
       *          {{{
       *          import scala.meta._
       *          exampleSuperTypes := exampleSuperTypes.value.map {
-      *            case ctor"_root_.org.scalatest.freespec.AnyFreeSpec" =>
-      *              ctor"_root_.org.scalatest.freespec.AsyncFreeSpec"
+      *            case init"_root_.org.scalatest.freespec.AnyFreeSpec" =>
+      *              init"_root_.org.scalatest.freespec.AsyncFreeSpec"
       *            case otherTrait =>
       *              otherTrait
       *          }
       *          }}}
       *
-      *          Note that each super type can be built from a [[scala.meta.XtensionQuasiquoteCtor.ctor ctor]] quasiquote.
+      *          Note that each super type can be built from an `init` quasiquote.
       *
       * @example You can introduce more ScalaTest DSL by adding more mixed-in traits
       *
       *          {{{
       *          import scala.meta._
-      *          exampleSuperTypes += ctor"_root_.org.scalatest.Inside"
+      *          exampleSuperTypes += init"_root_.org.scalatest.Inside"
       *          }}}
       *
       *          Then the [[org.scalatest.Inside.inside inside]] function should be available for your Scaladoc examples.
       */
     val exampleSuperTypes =
-      taskKey[List[scala.meta.Ctor.Call]](
+      taskKey[List[scala.meta.Init]](
         "Super types of the generated unit test suite class for examples in Scaladoc.")
 
     /** The package of the generated unit test suite class for examples in Scaladoc.
       *
-      * @example The value for this [[examplePackageRef]] setting can be built from
-      *          a [[scala.meta.XtensionQuasiquoteTerm.q q]] quasiquote:
+      * @example The value for this [[examplePackageRef]] setting can be built from a `q` quasiquote:
       *
       *          {{{
       *          import scala.meta._
@@ -325,7 +332,7 @@ object Example extends AutoPlugin {
   import autoImport._
 
   override def globalSettings: Seq[Def.Setting[_]] = Seq(
-    exampleSuperTypes := List(ctor"_root_.org.scalatest.freespec.AnyFreeSpec", ctor"_root_.org.scalatest.matchers.should.Matchers")
+    exampleSuperTypes := List(init"_root_.org.scalatest.freespec.AnyFreeSpec", init"_root_.org.scalatest.matchers.should.Matchers")
   )
 
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
