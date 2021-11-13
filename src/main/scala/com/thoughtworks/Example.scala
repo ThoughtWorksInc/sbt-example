@@ -30,7 +30,7 @@ import scala.reflect.NameTransformer
   * `<pre>
   * // build.sbt
   * enablePlugins(Example)
-  * libraryDependencies += "org.scalatest" %% "scalatest" % "3.1.4" % Test
+  * libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.10" % Test
   * </pre>`
   *
   * == Step 2: Run tests ==
@@ -92,13 +92,17 @@ object Example extends AutoPlugin {
       leadingComments.toList.flatMap { comment =>
         ScaladocParser.parseScaladoc(comment).toSeq.flatMap { scaladoc =>
           val (code, trailing, tags) = scaladoc.foldRight[(List[Stat], List[Stat], List[Stat])]((Nil, Nil, Nil)) {
-            case (DocToken(DocToken.CodeBlock, None, Some(codeBlock)),
-                  (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
+            case (
+                  DocToken(DocToken.CodeBlock, None, Some(codeBlock)),
+                  (codeAccumulator, trailingAccumulator, tagAccumulator)
+                ) =>
               val Term.Block(stats) =
                 new ScalametaParser(Input.String("{\n" + codeBlock + "\n}"), dialects.ParadiseTypelevel212).parseStat()
               (stats ++: codeAccumulator, trailingAccumulator, tagAccumulator)
-            case (DocToken(tagKind: DocToken.TagKind, Some(name), Some(description)),
-                  (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
+            case (
+                  DocToken(tagKind: DocToken.TagKind, Some(name), Some(description)),
+                  (codeAccumulator, trailingAccumulator, tagAccumulator)
+                ) =>
               val tag = if (codeAccumulator.nonEmpty) {
                 q"""
                   ${Lit.String(s"${tagKind.label} $name")}.in(try {
@@ -117,8 +121,10 @@ object Example extends AutoPlugin {
                 """
               }
               (Nil, Nil, tag :: tagAccumulator)
-            case (DocToken(tagKind: DocToken.TagKind, None, Some(body)),
-                  (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
+            case (
+                  DocToken(tagKind: DocToken.TagKind, None, Some(body)),
+                  (codeAccumulator, trailingAccumulator, tagAccumulator)
+                ) =>
               val tag = if (codeAccumulator.nonEmpty) {
                 q"""
                   ${Lit.String(s"${tagKind.label} $body")}.in(try {
@@ -135,8 +141,10 @@ object Example extends AutoPlugin {
                 """
               }
               (Nil, Nil, tag :: tagAccumulator)
-            case (DocToken(tagKind: DocToken.TagKind, name, body),
-                  (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
+            case (
+                  DocToken(tagKind: DocToken.TagKind, name, body),
+                  (codeAccumulator, trailingAccumulator, tagAccumulator)
+                ) =>
               val tag = if (codeAccumulator.nonEmpty) {
                 q"""
                   ${Lit.String(tagKind.label)}.-(try {
@@ -176,7 +184,8 @@ object Example extends AutoPlugin {
                 case DocToken(DocToken.Description, None, Some(text)) =>
                   if (text.startsWith("@")) {
                     logger.warn(
-                      s"Invalid Scaladoc tag detected at ${comment.pos} (missing parameters for the tag?): \n\t$text")
+                      s"Invalid Scaladoc tag detected at ${comment.pos} (missing parameters for the tag?): \n\t$text"
+                    )
                   }
                   text
                 case _ =>
@@ -297,8 +306,7 @@ object Example extends AutoPlugin {
       *          Then the [[org.scalatest.Inside.inside inside]] function should be available for your Scaladoc examples.
       */
     val exampleSuperTypes =
-      taskKey[List[scala.meta.Init]](
-        "Super types of the generated unit test suite class for examples in Scaladoc.")
+      taskKey[List[scala.meta.Init]]("Super types of the generated unit test suite class for examples in Scaladoc.")
 
     /** The package of the generated unit test suite class for examples in Scaladoc.
       *
@@ -321,7 +329,6 @@ object Example extends AutoPlugin {
       *          import scala.meta._
       *          exampleClassName := t"YourTestClassName"
       *          }}}
-      *
       */
     val exampleClassName =
       taskKey[Type.Name]("The class name of the generated unit test suite class for examples in Scaladoc.")
@@ -332,7 +339,10 @@ object Example extends AutoPlugin {
   import autoImport._
 
   override def globalSettings: Seq[Def.Setting[_]] = Seq(
-    exampleSuperTypes := List(init"_root_.org.scalatest.freespec.AnyFreeSpec", init"_root_.org.scalatest.matchers.should.Matchers")
+    exampleSuperTypes := List(
+      init"_root_.org.scalatest.freespec.AnyFreeSpec",
+      init"_root_.org.scalatest.matchers.should.Matchers"
+    )
   )
 
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
