@@ -142,12 +142,12 @@ object Example extends AutoPlugin {
               }
               (Nil, Nil, tag :: tagAccumulator)
             case (
-                  DocToken(tagKind: DocToken.TagKind, name, body),
+                  token @ DocToken(_: DocToken.TagKind, _, None),
                   (codeAccumulator, trailingAccumulator, tagAccumulator)
                 ) =>
               val tag = if (codeAccumulator.nonEmpty) {
                 q"""
-                  ${Lit.String(tagKind.label)}.-(try {
+                  ${Lit.String(token.toString)}.in(try {
                      ..$codeAccumulator
                   } finally {
                     ..$trailingAccumulator
@@ -155,7 +155,30 @@ object Example extends AutoPlugin {
                 """
               } else {
                 q"""
-                  ${Lit.String(tagKind.label)} - {
+                  ${Lit.String(token.toString)} - {
+                    ..$trailingAccumulator
+                  }
+                """
+              }
+              (Nil, Nil, tag :: tagAccumulator)
+            case (
+                  DocToken(DocToken.Description, None, Some(text)),
+                  (codeAccumulator, trailingAccumulator, tagAccumulator)
+                ) if text.startsWith("@") =>
+              logger.warn(
+                s"Invalid Scaladoc tag detected at ${comment.pos} (missing parameters for the tag?): \n\t$text"
+              )
+              val tag = if (codeAccumulator.nonEmpty) {
+                q"""
+                  ${Lit.String(text)}.in(try {
+                     ..$codeAccumulator
+                  } finally {
+                    ..$trailingAccumulator
+                  })
+                """
+              } else {
+                q"""
+                  ${Lit.String(text)} - {
                     ..$trailingAccumulator
                   }
                 """
