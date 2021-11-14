@@ -103,8 +103,8 @@ object Example extends AutoPlugin {
                   DocToken(tagKind: DocToken.TagKind, Some(name), Some(description)),
                   (codeAccumulator, trailingAccumulator, tagAccumulator)
                 ) =>
-              val tag = if (codeAccumulator.nonEmpty) {
-                q"""
+              if (codeAccumulator.nonEmpty) {
+                val tag = q"""
                   ${Lit.String(s"${tagKind.label} $name")}.in(try {
                     this.markup($description)
                     ..$codeAccumulator
@@ -112,55 +112,42 @@ object Example extends AutoPlugin {
                     ..$trailingAccumulator
                   })
                 """
+                (Nil, Nil, tag :: tagAccumulator)
               } else {
-                q"""
-                  ${Lit.String(s"${tagKind.label} $name")} - {
-                    this.markup($description)
-                    ..$trailingAccumulator
-                  }
-                """
+                (Nil, Nil, tagAccumulator)
               }
-              (Nil, Nil, tag :: tagAccumulator)
             case (
                   DocToken(tagKind: DocToken.TagKind, None, Some(body)),
                   (codeAccumulator, trailingAccumulator, tagAccumulator)
                 ) =>
-              val tag = if (codeAccumulator.nonEmpty) {
-                q"""
+              if (codeAccumulator.nonEmpty) {
+                val tag = q"""
                   ${Lit.String(s"${tagKind.label} $body")}.in(try {
                      ..$codeAccumulator
                   } finally {
                     ..$trailingAccumulator
                   })
                 """
+                (Nil, Nil, tag :: tagAccumulator)
               } else {
-                q"""
-                  ${Lit.String(s"${tagKind.label} $body")} - {
-                    ..$trailingAccumulator
-                  }
-                """
+                (Nil, Nil, tagAccumulator)
               }
-              (Nil, Nil, tag :: tagAccumulator)
             case (
                   token @ DocToken(_: DocToken.TagKind, _, None),
                   (codeAccumulator, trailingAccumulator, tagAccumulator)
                 ) =>
-              val tag = if (codeAccumulator.nonEmpty) {
-                q"""
+              if (codeAccumulator.nonEmpty) {
+                val tag = q"""
                   ${Lit.String(token.toString)}.in(try {
                      ..$codeAccumulator
                   } finally {
                     ..$trailingAccumulator
                   })
                 """
+                (Nil, Nil, tag :: tagAccumulator)
               } else {
-                q"""
-                  ${Lit.String(token.toString)} - {
-                    ..$trailingAccumulator
-                  }
-                """
+                (Nil, Nil, tagAccumulator)
               }
-              (Nil, Nil, tag :: tagAccumulator)
             case (
                   DocToken(DocToken.Description, None, Some(text)),
                   (codeAccumulator, trailingAccumulator, tagAccumulator)
@@ -168,22 +155,18 @@ object Example extends AutoPlugin {
               logger.warn(
                 s"Invalid Scaladoc tag detected at ${comment.pos} (missing parameters for the tag?): \n\t$text"
               )
-              val tag = if (codeAccumulator.nonEmpty) {
-                q"""
+              if (codeAccumulator.nonEmpty) {
+                val tag = q"""
                   ${Lit.String(text)}.in(try {
                      ..$codeAccumulator
                   } finally {
                     ..$trailingAccumulator
                   })
                 """
+                (Nil, Nil, tag :: tagAccumulator)
               } else {
-                q"""
-                  ${Lit.String(text)} - {
-                    ..$trailingAccumulator
-                  }
-                """
+                (Nil, Nil, tagAccumulator)
               }
-              (Nil, Nil, tag :: tagAccumulator)
             case (DocToken(DocToken.Paragraph, None, None), accumulators) =>
               accumulators
             case (otherToken, (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
@@ -221,20 +204,29 @@ object Example extends AutoPlugin {
                 (codeAccumulator, markup :: trailingAccumulator, tagAccumulator)
               }
           }
-          code ::: trailing ::: tags
+          if (tags.nonEmpty || code.nonEmpty) {
+            code ::: trailing ::: tags
+          } else {
+            Nil
+          }
         }
       }
     }
 
     def testTree(tree: Tree): Seq[Stat] = {
       def templateTestTree(name: Name, template: Template) = {
-        import template._
         val title = name.syntax
-        q"""$title - {
-          ..${scaladocTestTree(comments.leading(tree))}
-          ..${template.early.flatMap(testTree)}
-          ..${template.stats.flatMap(testTree)}
-        }""" :: Nil
+        val trees =
+          scaladocTestTree(comments.leading(tree)) :::
+          template.early.flatMap(testTree) :::
+          template.stats.flatMap(testTree)
+        if (trees.isEmpty) {
+          Nil
+        } else {
+          q"""$title - {
+            ..$trees
+          }""" :: Nil
+        }
       }
       def leafTestTree(name: Name) = {
         val title = name.syntax
@@ -243,17 +235,21 @@ object Example extends AutoPlugin {
           Nil
         } else {
           q"""$title - {
-              ..$trees
-            }""" :: Nil
+            ..$trees
+          }""" :: Nil
         }
       }
       tree match {
         case Pkg(termRef, children) =>
           val packageName = termRef.toString
-          q"""$packageName - {
-              ..${scaladocTestTree(comments.leading(tree))}
-              ..${children.flatMap(testTree)}
+          val trees = scaladocTestTree(comments.leading(tree)) ::: children.flatMap(testTree)
+          if (trees.isEmpty) {
+            Nil
+          } else {
+            q"""$packageName - {
+              ..$trees
             }""" :: Nil
+          }
         case Pkg.Object(_, name, template: Template) =>
           templateTestTree(name, template)
         case Defn.Object(_, name, template: Template) =>
