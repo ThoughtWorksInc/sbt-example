@@ -83,7 +83,7 @@ import scala.reflect.NameTransformer
   */
 object Example extends AutoPlugin {
 
-  def exampleStats(source: Source, logger: Logger): Seq[Stat] = {
+  private def exampleStats(source: Source, logger: Logger, testDialect: Dialect): Seq[Stat] = {
     val comments = AssociatedComments(source)
 
     def scaladocTestTree(leadingComments: Set[Token.Comment]): List[Stat] = {
@@ -95,7 +95,8 @@ object Example extends AutoPlugin {
                   (codeAccumulator, trailingAccumulator, tagAccumulator)
                 ) =>
               val Term.Block(stats) =
-                new ScalametaParser(Input.String("{\n" + codeBlock + "\n}"), dialects.ParadiseTypelevel212).parseStat()
+                new ScalametaParser(Input.String("{\n" + codeBlock + "\n}"))(testDialect)
+                  .parseStat()
               (stats ++: codeAccumulator, trailingAccumulator, tagAccumulator)
             case (
                   DocToken(tagKind: DocToken.TagKind, Some(name), Some(description)),
@@ -356,6 +357,8 @@ object Example extends AutoPlugin {
 
     @deprecated("4.1.0", "Use `exampleClassName` instead.")
     val exampleClassRef = exampleClassName
+
+    val exampleDialect = taskKey[Dialect]("The source code dialect used to parse Scaladoc")
   }
   import autoImport._
 
@@ -372,7 +375,7 @@ object Example extends AutoPlugin {
       Type.Name(NameTransformer.encode(raw"""${splitName.last}Example"""))
     },
     examplePackageRef := {
-      val organizationPackageRef = new ScalametaParser(Input.String(organization.value), dialects.ParadiseTypelevel212)
+      val organizationPackageRef = new ScalametaParser(Input.String(organization.value))((Test / exampleDialect).value)
         .parseRule(_.path(thisOK = false))
       val splitName = name.value.split('-')
       splitName.view(0, splitName.length - 1).foldLeft(organizationPackageRef) { (packageRef, subpackage) =>
@@ -384,10 +387,11 @@ object Example extends AutoPlugin {
       PlatformTokenizerCache.megaCache.clear()
       val outputFile = (sourceManaged in Test).value / "sbt-example-generated.scala"
       val logger = (streams in generateExample).value.log
+      val compileDialect = (Compile / exampleDialect).value
+      val testDialect = (Test / autoImport.exampleDialect).value
       val content = (unmanagedSources in Compile).value.view.flatMap { file =>
-        // Workaround for https://github.com/scalameta/scalameta/issues/874
-        val source = new ScalametaParser(Input.File(file), dialects.ParadiseTypelevel212).parseSource()
-        exampleStats(source, logger)
+        val source = new ScalametaParser(Input.File(file))(compileDialect).parseSource()
+        exampleStats(source, logger, testDialect)
       }.toList
       val generatedFileTree = q"""
         package ${examplePackageRef.value} {
@@ -402,5 +406,29 @@ object Example extends AutoPlugin {
     (sourceGenerators in Test) += {
       generateExample.taskValue
     }
-  )
+  ) ++
+    (for (configuration <- Seq(Test, Compile)) yield {
+      configuration / exampleDialect := {
+        VersionNumber((configuration / scalaVersion).value).numbers match {
+          case Seq(3L, _*) =>
+            dialects.Scala3
+          case Seq(2L, 13L, _*) =>
+            if ((configuration / scalacOptions).value.contains("-Xsource:3")) {
+              dialects.Scala213Source3
+            } else {
+              dialects.Scala213
+            }
+          case Seq(2L, 12L, _*) =>
+            if ((configuration / scalacOptions).value.contains("-Xsource:3")) {
+              dialects.Scala212Source3
+            } else {
+              dialects.Scala212
+            }
+          case Seq(2L, 11L, _*) =>
+            dialects.Scala211
+          case Seq(2L, 10L, _*) =>
+            dialects.Scala210
+        }
+      }
+    })
 }
