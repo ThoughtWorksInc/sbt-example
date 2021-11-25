@@ -8,7 +8,7 @@ name := "sbt-example"
 
 libraryDependencies += "org.scalameta" %% "contrib" % "4.1.6"
 
-libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.0.1"
+libraryDependencies += "org.scalameta" %% "scalameta" % "4.4.30"
 
 libraryDependencies += scalaOrganization.value % "scala-reflect" % scalaVersion.value % Provided
 
