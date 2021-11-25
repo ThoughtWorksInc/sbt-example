@@ -14,34 +14,26 @@ import scala.reflect.NameTransformer
 
 /** Generates unit tests from examples in Scaladoc.
   *
-  * = Getting started =
+  * =Getting started=
   *
-  * Suppose you have some source files under `src/main/scala`,
-  * which contain some code examples in their Scaladoc.
-  * You can run those examples as test cases with this library.
+  * Suppose you have some source files under `src/main/scala`, which contain some code examples in their Scaladoc. You
+  * can run those examples as test cases with this library.
   *
-  * == Step 1: Add this plug-in in your sbt settings ==
+  * ==Step 1: Add this plug-in in your sbt settings==
   *
-  * `<pre>
-  * // project/plugins.sbt
-  * addSbtPlugin("com.thoughtworks.example" % "sbt-example" % "latest.release")
+  * `<pre> // project/plugins.sbt addSbtPlugin("com.thoughtworks.example" % "sbt-example" % "latest.release") </pre>`
+  *
+  * `<pre> // build.sbt enablePlugins(Example) libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.10" % Test
   * </pre>`
   *
-  * `<pre>
-  * // build.sbt
-  * enablePlugins(Example)
-  * libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.10" % Test
-  * </pre>`
+  * ==Step 2: Run tests==
   *
-  * == Step 2: Run tests ==
+  * `<pre> sbt test </pre>`
   *
-  * `<pre>
-  * sbt test
-  * </pre>`
+  * You will notice that all code blocks inside <code>{{{ }}}</code> in Scaladoc comments under `src/main/scala` are
+  * executed.
   *
-  * You will notice that all code blocks inside <code>{{{ }}}</code> in Scaladoc comments under `src/main/scala` are executed.
-  *
-  * = Common code =
+  * =Common code=
   *
   * Code blocks before any Scaladoc tag are shared by all test cases. For example:
   *
@@ -51,37 +43,43 @@ import scala.reflect.NameTransformer
   *
   * Then the name `FreeSpec` will be available for all test cases.
   *
-  * @note A variable defined under a Scaladoc tag is not accessible from code blocks under another tag.
+  * @note
+  *   A variable defined under a Scaladoc tag is not accessible from code blocks under another tag.
   *
-  *       {{{
-  *         "i" shouldNot compile
-  *       }}}
-  * @example A code block may define variables.
+  * {{{
+  * "i" shouldNot compile
+  * }}}
+  * @example
+  *   A code block may define variables.
   *
-  *          {{{
-  *            val i = 1
-  *            val s = "text"
-  *          }}}
+  * {{{
+  * val i = 1
+  * val s = "text"
+  * }}}
   *
-  *          Those variables are accessible from other code blocks under the same Scaladoc tag.
+  * Those variables are accessible from other code blocks under the same Scaladoc tag.
   *
-  *          {{{
-  *            i should be(1)
-  *          }}}
+  * {{{
+  * i should be(1)
+  * }}}
   *
-  *          {{{
-  *            s should be("text")
-  *          }}}
-  * @example A code block under a Scaladoc tag is a test case.
+  * {{{
+  * s should be("text")
+  * }}}
+  * @example
+  *   A code block under a Scaladoc tag is a test case.
   *
-  *          The test case is inside an [[org.scalatest.freespec.AnyFreeSpec]]
+  * The test case is inside an [[org.scalatest.freespec.AnyFreeSpec]]
   *
-  *          {{{
-  *            this should be(an[AnyFreeSpec])
-  *          }}}
-  * @author 杨博 (Yang Bo) &lt;pop.atry@gmail.com&gt;
-  * @see [[https://github.com/ThoughtWorksInc/sbt-example sbt-example on Github]]
-  * @see [[autoImport]] for available sbt settings.
+  * {{{
+  * this should be(an[AnyFreeSpec])
+  * }}}
+  * @author
+  *   杨博 (Yang Bo) &lt;pop.atry@gmail.com&gt;
+  * @see
+  *   [[https://github.com/ThoughtWorksInc/sbt-example sbt-example on Github]]
+  * @see
+  *   [[autoImport]] for available sbt settings.
   */
 object Example extends AutoPlugin {
 
@@ -218,8 +216,8 @@ object Example extends AutoPlugin {
         val title = name.syntax
         val trees =
           scaladocTestTree(comments.leading(tree)) :::
-          template.early.flatMap(testTree) :::
-          template.stats.flatMap(testTree)
+            template.early.flatMap(testTree) :::
+            template.stats.flatMap(testTree)
         if (trees.isEmpty) {
           Nil
         } else {
@@ -297,57 +295,61 @@ object Example extends AutoPlugin {
 
     /** Super types of the generated unit test suite class for examples in Scaladoc.
       *
-      * @example The default value of this [[exampleSuperTypes]] settings are
-      *          [[org.scalatest.freespec.AnyFreeSpec]] and [[org.scalatest.matchers.should.Matchers]].
+      * @example
+      *   The default value of this [[exampleSuperTypes]] settings are [[org.scalatest.freespec.AnyFreeSpec]] and
+      *   [[org.scalatest.matchers.should.Matchers]].
       *
-      *          You may want to replace [[org.scalatest.freespec.AnyFreeSpec]] to [[org.scalatest.freespec.AsyncFreeSpec]]
-      *          for asynchronous tests:
+      * You may want to replace [[org.scalatest.freespec.AnyFreeSpec]] to [[org.scalatest.freespec.AsyncFreeSpec]] for
+      * asynchronous tests:
       *
-      *          {{{
-      *          import scala.meta._
-      *          exampleSuperTypes := exampleSuperTypes.value.map {
-      *            case init"_root_.org.scalatest.freespec.AnyFreeSpec" =>
-      *              init"_root_.org.scalatest.freespec.AsyncFreeSpec"
-      *            case otherTrait =>
-      *              otherTrait
-      *          }
-      *          }}}
+      * {{{
+      * import scala.meta._
+      * exampleSuperTypes := exampleSuperTypes.value.map {
+      *   case init"_root_.org.scalatest.freespec.AnyFreeSpec" =>
+      *     init"_root_.org.scalatest.freespec.AsyncFreeSpec"
+      *   case otherTrait =>
+      *     otherTrait
+      * }
+      * }}}
       *
-      *          Note that each super type can be built from an `init` quasiquote.
+      * Note that each super type can be built from an `init` quasiquote.
       *
-      * @example You can introduce more ScalaTest DSL by adding more mixed-in traits
+      * @example
+      *   You can introduce more ScalaTest DSL by adding more mixed-in traits
       *
-      *          {{{
-      *          import scala.meta._
-      *          exampleSuperTypes += init"_root_.org.scalatest.Inside"
-      *          }}}
+      * {{{
+      * import scala.meta._
+      * exampleSuperTypes += init"_root_.org.scalatest.Inside"
+      * }}}
       *
-      *          Then the [[org.scalatest.Inside.inside inside]] function should be available for your Scaladoc examples.
+      * Then the [[org.scalatest.Inside.inside inside]] function should be available for your Scaladoc examples.
       */
     val exampleSuperTypes =
       taskKey[List[scala.meta.Init]]("Super types of the generated unit test suite class for examples in Scaladoc.")
 
     /** The package of the generated unit test suite class for examples in Scaladoc.
       *
-      * @example The value for this [[examplePackageRef]] setting can be built from a `q` quasiquote:
+      * @example
+      *   The value for this [[examplePackageRef]] setting can be built from a `q` quasiquote:
       *
-      *          {{{
-      *          import scala.meta._
-      *          examplePackageRef := q"_root_.com.yourpackagename.yourlibraryname"
-      *          }}}
+      * {{{
+      * import scala.meta._
+      * examplePackageRef := q"_root_.com.yourpackagename.yourlibraryname"
+      * }}}
       */
     val examplePackageRef =
       taskKey[Term.Ref]("The package of the generated unit test suite class for examples in Scaladoc.")
 
     /** The class name of the generated unit test suite class for examples in Scaladoc.
       *
-      * @example The value for this [[exampleClassName]] setting can be built from
-      *          a [[scala.meta.XtensionQuasiquoteType.t t]] quasiquote:
+      * @example
+      *   The value for this [[exampleClassName]] setting can be built from a [[scala.meta.XtensionQuasiquoteType.t t]]
+      *   quasiquote:
       *
-      *          {{{
-      *          import scala.meta._
-      *          exampleClassName := t"YourTestClassName"
-      *          }}}
+      * {{{
+      * import scala.meta._
+      * exampleClassName := t"YourTestClassName"
+      * }}}
       */
     val exampleClassName =
       taskKey[Type.Name]("The class name of the generated unit test suite class for examples in Scaladoc.")
