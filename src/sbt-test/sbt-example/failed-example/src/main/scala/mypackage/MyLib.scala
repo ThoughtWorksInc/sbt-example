@@ -1,6 +1,8 @@
 package mypackage
+
 /** A library to test
-  * @example My example
+  * @example
+  *   My example
   * {{{
   * val answer = 41
   * answer should be(42)
