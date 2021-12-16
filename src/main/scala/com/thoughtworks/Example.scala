@@ -375,7 +375,7 @@ object Example extends AutoPlugin {
       Type.Name(NameTransformer.encode(raw"""${splitName.last}Example"""))
     },
     examplePackageRef := {
-      val organizationPackageRef = new ScalametaParser(Input.String(organization.value))((Test / exampleDialect).value)
+      val organizationPackageRef = new ScalametaParser(Input.String(organization.value.replace('-', '_')))((Test / exampleDialect).value)
         .parseRule(_.path(thisOK = false))
       val splitName = name.value.split('-')
       splitName.view(0, splitName.length - 1).foldLeft(organizationPackageRef) { (packageRef, subpackage) =>
