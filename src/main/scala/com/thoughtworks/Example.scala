@@ -213,12 +213,11 @@ object Example extends AutoPlugin {
     }
 
     def testTree(tree: Tree): Seq[Stat] = {
-      def templateTestTree(name: Name, template: Template) = {
+      def defnTestTree(name: Name, stats: List[Stat]) = {
         val title = name.syntax
         val trees =
           scaladocTestTree(comments.leading(tree)) :::
-            template.early.flatMap(testTree) :::
-            template.stats.flatMap(testTree)
+          stats.flatMap(testTree)
         if (trees.isEmpty) {
           Nil
         } else {
@@ -226,6 +225,9 @@ object Example extends AutoPlugin {
             ..$trees
           }""" :: Nil
         }
+      }
+      def templateTestTree(name: Name, template: Template) = {
+        defnTestTree(name, template.early ::: template.stats)
       }
       def leafTestTree(name: Name) = {
         val title = name.syntax
@@ -251,28 +253,39 @@ object Example extends AutoPlugin {
           }
         case Pkg.Object(_, name, template: Template) =>
           templateTestTree(name, template)
-        case Defn.Object(_, name, template: Template) =>
-          templateTestTree(name, template)
-        case Defn.Trait(_, name, _, _, template: Template) =>
-          templateTestTree(name, template)
-        case Defn.Class(_, name, _, _, template: Template) =>
-          templateTestTree(name, template)
-        case Defn.Def(_, name, _, _, _, _) =>
-          leafTestTree(name)
-        case Defn.Type(_, name, _, _) =>
-          leafTestTree(name)
-        case Defn.Val(_, Seq(Pat.Var(name)), _, _) =>
-          leafTestTree(name)
-        case Defn.Var(_, Seq(Pat.Var(name)), _, _) =>
-          leafTestTree(name)
-        case Defn.Macro(_, name, _, _, _, _) =>
-          leafTestTree(name)
-        case Defn.ExtensionGroup(_, _, stat) =>
-          testTree(stat)
-        case Defn.Given(_, name, _, _, template) =>
-          templateTestTree(name, template)
-        case Defn.GivenAlias(_, name, _, _, _, _) =>
-          leafTestTree(name)
+        case defnTree: Defn =>
+          defnTree match {
+            case Defn.Object(_, name, template: Template) =>
+              templateTestTree(name, template)
+            case Defn.Trait(_, name, _, _, template: Template) =>
+              templateTestTree(name, template)
+            case Defn.Class(_, name, _, _, template: Template) =>
+              templateTestTree(name, template)
+            case Defn.Def(_, name, _, _, _, _) =>
+              leafTestTree(name)
+            case Defn.Type(_, name, _, _) =>
+              leafTestTree(name)
+            case Defn.Val(_, Seq(Pat.Var(name)), _, _) =>
+              leafTestTree(name)
+            case Defn.Var(_, Seq(Pat.Var(name)), _, _) =>
+              leafTestTree(name)
+            case Defn.Macro(_, name, _, _, _, _) =>
+              leafTestTree(name)
+            case Defn.ExtensionGroup(_, paramss, stat) =>
+              val Some(name) = paramss.collectFirst(Function.unlift(_.collectFirst {
+                case param if !param.mods.exists(Set(Mod.Implicit, Mod.Using)) =>
+                  param.name
+              }))
+              defnTestTree(name, stat match {
+                case Term.Block(stats) =>
+                  stats
+                case stat => List(stat)
+              })
+            case Defn.Given(_, name, _, _, template) =>
+              templateTestTree(name, template)
+            case Defn.GivenAlias(_, name, _, _, _, _) =>
+              leafTestTree(name)
+          }
         case Ctor.Secondary(_, name, _, _, _) =>
           leafTestTree(name)
         case _ =>
