@@ -267,6 +267,12 @@ object Example extends AutoPlugin {
           leafTestTree(name)
         case Defn.Macro(_, name, _, _, _, _) =>
           leafTestTree(name)
+        case Defn.ExtensionGroup(_, _, stat) =>
+          testTree(stat)
+        case Defn.Given(_, name, _, _, template) =>
+          templateTestTree(name, template)
+        case Defn.GivenAlias(_, name, _, _, _, _) =>
+          leafTestTree(name)
         case Ctor.Secondary(_, name, _, _, _) =>
           leafTestTree(name)
         case _ =>
