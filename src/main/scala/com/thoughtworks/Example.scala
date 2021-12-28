@@ -217,7 +217,7 @@ object Example extends AutoPlugin {
         val title = name.syntax
         val trees =
           scaladocTestTree(comments.leading(tree)) :::
-          stats.flatMap(testTree)
+            stats.flatMap(testTree)
         if (trees.isEmpty) {
           Nil
         } else {
@@ -276,11 +276,14 @@ object Example extends AutoPlugin {
                 case param if !param.mods.exists(Set(Mod.Implicit, Mod.Using)) =>
                   param.name
               }))
-              defnTestTree(name, stat match {
-                case Term.Block(stats) =>
-                  stats
-                case stat => List(stat)
-              })
+              defnTestTree(
+                name,
+                stat match {
+                  case Term.Block(stats) =>
+                    stats
+                  case stat => List(stat)
+                }
+              )
             case Defn.Given(_, name, _, _, template) =>
               templateTestTree(name, template)
             case Defn.GivenAlias(_, name, _, _, _, _) =>
@@ -394,8 +397,9 @@ object Example extends AutoPlugin {
       Type.Name(NameTransformer.encode(raw"""${splitName.last}Example"""))
     },
     examplePackageRef := {
-      val organizationPackageRef = new ScalametaParser(Input.String(organization.value.replace('-', '_')))((Test / exampleDialect).value)
-        .parseRule(_.path(thisOK = false))
+      val organizationPackageRef =
+        new ScalametaParser(Input.String(organization.value.replace('-', '_')))((Test / exampleDialect).value)
+          .parseRule(_.path(thisOK = false))
       val splitName = name.value.split('-')
       splitName.view(0, splitName.length - 1).foldLeft(organizationPackageRef) { (packageRef, subpackage) =>
         q"$packageRef.${Term.Name(subpackage)}"
