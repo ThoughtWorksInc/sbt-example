@@ -3,6 +3,7 @@ import java.io.File
 
 import sbt.Keys._
 import sbt._
+import sbt.nio.Keys._
 import sbt.plugins.JvmPlugin
 
 import scala.collection.immutable
@@ -406,13 +407,14 @@ object Example extends AutoPlugin {
       }
 
     },
+    generateExample / fileInputs := (Compile / unmanagedSources / fileInputs).value,
     generateExample := {
       PlatformTokenizerCache.megaCache.clear()
       val outputFile = (sourceManaged in Test).value / "sbt-example-generated.scala"
       val logger = (streams in generateExample).value.log
       val compileDialect = (Compile / exampleDialect).value
       val testDialect = (Test / autoImport.exampleDialect).value
-      val content = (unmanagedSources in Compile).value.view.flatMap { file =>
+      val content = generateExample.inputFiles.view.flatMap { file =>
         val source = new ScalametaParser(Input.File(file))(compileDialect).parseSource()
         exampleStats(source, logger, testDialect)
       }.toList
