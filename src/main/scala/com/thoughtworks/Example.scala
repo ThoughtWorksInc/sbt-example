@@ -407,7 +407,6 @@ object Example extends AutoPlugin {
 
     },
     generateExample := {
-      PlatformTokenizerCache.megaCache.clear()
       val outputFile = (sourceManaged in Test).value / "sbt-example-generated.scala"
       val logger = (streams in generateExample).value.log
       val compileDialect = (Compile / exampleDialect).value
