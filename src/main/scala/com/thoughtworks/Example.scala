@@ -17,26 +17,29 @@ import scala.reflect.NameTransformer
   *
   * =Getting started=
   *
-  * Suppose you have some source files under `src/main/scala`, which contain some code examples in their Scaladoc. You
-  * can run those examples as test cases with this library.
+  * Suppose you have some source files under `src/main/scala`, which contain
+  * some code examples in their Scaladoc. You can run those examples as test
+  * cases with this library.
   *
   * ==Step 1: Add this plug-in in your sbt settings==
   *
-  * `<pre> // project/plugins.sbt addSbtPlugin("com.thoughtworks.example" % "sbt-example" % "latest.release") </pre>`
+  * `<pre> // project/plugins.sbt addSbtPlugin("com.thoughtworks.example" %
+  * "sbt-example" % "latest.release") </pre>`
   *
-  * `<pre> // build.sbt enablePlugins(Example) libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.10" % Test
-  * </pre>`
+  * `<pre> // build.sbt enablePlugins(Example) libraryDependencies +=
+  * "org.scalatest" %% "scalatest" % "3.2.10" % Test </pre>`
   *
   * ==Step 2: Run tests==
   *
   * `<pre> sbt test </pre>`
   *
-  * You will notice that all code blocks inside <code>{{{ }}}</code> in Scaladoc comments under `src/main/scala` are
-  * executed.
+  * You will notice that all code blocks inside <code>{{{ }}}</code> in Scaladoc
+  * comments under `src/main/scala` are executed.
   *
   * =Common code=
   *
-  * Code blocks before any Scaladoc tag are shared by all test cases. For example:
+  * Code blocks before any Scaladoc tag are shared by all test cases. For
+  * example:
   *
   * {{{
   * import org.scalatest.freespec.AnyFreeSpec
@@ -45,7 +48,8 @@ import scala.reflect.NameTransformer
   * Then the name `FreeSpec` will be available for all test cases.
   *
   * @note
-  *   A variable defined under a Scaladoc tag is not accessible from code blocks under another tag.
+  *   A variable defined under a Scaladoc tag is not accessible from code blocks
+  *   under another tag.
   *
   * {{{
   * "i" shouldNot compile
@@ -58,7 +62,8 @@ import scala.reflect.NameTransformer
   * val s = "text"
   * }}}
   *
-  * Those variables are accessible from other code blocks under the same Scaladoc tag.
+  * Those variables are accessible from other code blocks under the same
+  * Scaladoc tag.
   *
   * {{{
   * i should be(1)
@@ -84,27 +89,38 @@ import scala.reflect.NameTransformer
   */
 object Example extends AutoPlugin {
 
-  private def exampleStats(source: Source, logger: Logger, testDialect: Dialect): Seq[Stat] = {
+  private def exampleStats(
+      source: Source,
+      logger: Logger,
+      testDialect: Dialect
+  ): Seq[Stat] = {
     val comments = AssociatedComments(source)
 
     def scaladocTestTree(leadingComments: Set[Token.Comment]): List[Stat] = {
       leadingComments.toList.flatMap { comment =>
         ScaladocParser.parseScaladoc(comment).toSeq.flatMap { scaladoc =>
-          val (code, trailing, tags) = scaladoc.foldRight[(List[Stat], List[Stat], List[Stat])]((Nil, Nil, Nil)) {
-            case (
-                  DocToken(DocToken.CodeBlock, None, Some(codeBlock)),
-                  (codeAccumulator, trailingAccumulator, tagAccumulator)
-                ) =>
-              val Term.Block(stats) =
-                new ScalametaParser(Input.String("{\n" + codeBlock + "\n}"))(testDialect)
-                  .parseStat()
-              (stats ++: codeAccumulator, trailingAccumulator, tagAccumulator)
-            case (
-                  DocToken(tagKind: DocToken.TagKind, Some(name), Some(description)),
-                  (codeAccumulator, trailingAccumulator, tagAccumulator)
-                ) =>
-              if (codeAccumulator.nonEmpty) {
-                val tag = q"""
+          val (code, trailing, tags) = scaladoc
+            .foldRight[(List[Stat], List[Stat], List[Stat])]((Nil, Nil, Nil)) {
+              case (
+                    DocToken(DocToken.CodeBlock, None, Some(codeBlock)),
+                    (codeAccumulator, trailingAccumulator, tagAccumulator)
+                  ) =>
+                val Term.Block(stats) =
+                  new ScalametaParser(Input.String("{\n" + codeBlock + "\n}"))(
+                    testDialect
+                  )
+                    .parseStat()
+                (stats ++: codeAccumulator, trailingAccumulator, tagAccumulator)
+              case (
+                    DocToken(
+                      tagKind: DocToken.TagKind,
+                      Some(name),
+                      Some(description)
+                    ),
+                    (codeAccumulator, trailingAccumulator, tagAccumulator)
+                  ) =>
+                if (codeAccumulator.nonEmpty) {
+                  val tag = q"""
                   ${Lit.String(s"${tagKind.label} $name")}.in(try {
                     this.markup($description)
                     ..$codeAccumulator
@@ -112,98 +128,109 @@ object Example extends AutoPlugin {
                     ..$trailingAccumulator
                   })
                 """
-                (Nil, Nil, tag :: tagAccumulator)
-              } else {
-                (Nil, Nil, tagAccumulator)
-              }
-            case (
-                  DocToken(tagKind: DocToken.TagKind, None, Some(body)),
-                  (codeAccumulator, trailingAccumulator, tagAccumulator)
-                ) =>
-              if (codeAccumulator.nonEmpty) {
-                val tag = q"""
+                  (Nil, Nil, tag :: tagAccumulator)
+                } else {
+                  (Nil, Nil, tagAccumulator)
+                }
+              case (
+                    DocToken(tagKind: DocToken.TagKind, None, Some(body)),
+                    (codeAccumulator, trailingAccumulator, tagAccumulator)
+                  ) =>
+                if (codeAccumulator.nonEmpty) {
+                  val tag = q"""
                   ${Lit.String(s"${tagKind.label} $body")}.in(try {
                      ..$codeAccumulator
                   } finally {
                     ..$trailingAccumulator
                   })
                 """
-                (Nil, Nil, tag :: tagAccumulator)
-              } else {
-                (Nil, Nil, tagAccumulator)
-              }
-            case (
-                  token @ DocToken(_: DocToken.TagKind, _, None),
-                  (codeAccumulator, trailingAccumulator, tagAccumulator)
-                ) =>
-              if (codeAccumulator.nonEmpty) {
-                val tag = q"""
+                  (Nil, Nil, tag :: tagAccumulator)
+                } else {
+                  (Nil, Nil, tagAccumulator)
+                }
+              case (
+                    token @ DocToken(_: DocToken.TagKind, _, None),
+                    (codeAccumulator, trailingAccumulator, tagAccumulator)
+                  ) =>
+                if (codeAccumulator.nonEmpty) {
+                  val tag = q"""
                   ${Lit.String(token.toString)}.in(try {
                      ..$codeAccumulator
                   } finally {
                     ..$trailingAccumulator
                   })
                 """
-                (Nil, Nil, tag :: tagAccumulator)
-              } else {
-                (Nil, Nil, tagAccumulator)
-              }
-            case (
-                  DocToken(DocToken.Description, None, Some(text)),
-                  (codeAccumulator, trailingAccumulator, tagAccumulator)
-                ) if text.startsWith("@") =>
-              logger.warn(
-                s"Invalid Scaladoc tag detected at ${comment.pos} (missing parameters for the tag?): \n\t$text"
-              )
-              if (codeAccumulator.nonEmpty) {
-                val tag = q"""
+                  (Nil, Nil, tag :: tagAccumulator)
+                } else {
+                  (Nil, Nil, tagAccumulator)
+                }
+              case (
+                    DocToken(DocToken.Description, None, Some(text)),
+                    (codeAccumulator, trailingAccumulator, tagAccumulator)
+                  ) if text.startsWith("@") =>
+                logger.warn(
+                  s"Invalid Scaladoc tag detected at ${comment.pos} (missing parameters for the tag?): \n\t$text"
+                )
+                if (codeAccumulator.nonEmpty) {
+                  val tag = q"""
                   ${Lit.String(text)}.in(try {
                      ..$codeAccumulator
                   } finally {
                     ..$trailingAccumulator
                   })
                 """
-                (Nil, Nil, tag :: tagAccumulator)
-              } else {
-                (Nil, Nil, tagAccumulator)
-              }
-            case (DocToken(DocToken.Paragraph, None, None), accumulators) =>
-              accumulators
-            case (otherToken, (codeAccumulator, trailingAccumulator, tagAccumulator)) =>
-              val tokenXml = otherToken match {
-                case DocToken(DocToken.InheritDoc, None, None) =>
-                  "@inheritdoc"
-                case DocToken(DocToken.Paragraph, None, Some(text)) =>
-                  <p>{text}</p>
-                case DocToken(DocToken.Heading1, None, Some(text)) =>
-                  <h1>{text}</h1>
-                case DocToken(DocToken.Heading2, None, Some(text)) =>
-                  <h2>{text}</h2>
-                case DocToken(DocToken.Heading3, None, Some(text)) =>
-                  <h3>{text}</h3>
-                case DocToken(DocToken.Heading4, None, Some(text)) =>
-                  <h4>{text}</h4>
-                case DocToken(DocToken.Heading5, None, Some(text)) =>
-                  <h5>{text}</h5>
-                case DocToken(DocToken.Heading6, None, Some(text)) =>
-                  <h6>{text}</h6>
-                case DocToken(DocToken.Description, None, Some(text)) =>
-                  if (text.startsWith("@")) {
-                    logger.warn(
-                      s"Invalid Scaladoc tag detected at ${comment.pos} (missing parameters for the tag?): \n\t$text"
-                    )
-                  }
-                  text
-                case _ =>
-                  otherToken
-              }
-              val markup = q"this.markup(${tokenXml.toString})"
-              if (codeAccumulator.nonEmpty) {
-                (markup :: codeAccumulator, trailingAccumulator, tagAccumulator)
-              } else {
-                (codeAccumulator, markup :: trailingAccumulator, tagAccumulator)
-              }
-          }
+                  (Nil, Nil, tag :: tagAccumulator)
+                } else {
+                  (Nil, Nil, tagAccumulator)
+                }
+              case (DocToken(DocToken.Paragraph, None, None), accumulators) =>
+                accumulators
+              case (
+                    otherToken,
+                    (codeAccumulator, trailingAccumulator, tagAccumulator)
+                  ) =>
+                val tokenXml = otherToken match {
+                  case DocToken(DocToken.InheritDoc, None, None) =>
+                    "@inheritdoc"
+                  case DocToken(DocToken.Paragraph, None, Some(text)) =>
+                    <p>{text}</p>
+                  case DocToken(DocToken.Heading1, None, Some(text)) =>
+                    <h1>{text}</h1>
+                  case DocToken(DocToken.Heading2, None, Some(text)) =>
+                    <h2>{text}</h2>
+                  case DocToken(DocToken.Heading3, None, Some(text)) =>
+                    <h3>{text}</h3>
+                  case DocToken(DocToken.Heading4, None, Some(text)) =>
+                    <h4>{text}</h4>
+                  case DocToken(DocToken.Heading5, None, Some(text)) =>
+                    <h5>{text}</h5>
+                  case DocToken(DocToken.Heading6, None, Some(text)) =>
+                    <h6>{text}</h6>
+                  case DocToken(DocToken.Description, None, Some(text)) =>
+                    if (text.startsWith("@")) {
+                      logger.warn(
+                        s"Invalid Scaladoc tag detected at ${comment.pos} (missing parameters for the tag?): \n\t$text"
+                      )
+                    }
+                    text
+                  case _ =>
+                    otherToken
+                }
+                val markup = q"this.markup(${tokenXml.toString})"
+                if (codeAccumulator.nonEmpty) {
+                  (
+                    markup :: codeAccumulator,
+                    trailingAccumulator,
+                    tagAccumulator
+                  )
+                } else {
+                  (
+                    codeAccumulator,
+                    markup :: trailingAccumulator,
+                    tagAccumulator
+                  )
+                }
+            }
           if (tags.nonEmpty || code.nonEmpty) {
             code ::: trailing ::: tags
           } else {
@@ -244,7 +271,10 @@ object Example extends AutoPlugin {
       tree match {
         case Pkg(termRef, children) =>
           val packageName = termRef.toString
-          val trees = scaladocTestTree(comments.leading(tree)) ::: children.flatMap(testTree)
+          val trees =
+            scaladocTestTree(comments.leading(tree)) ::: children.flatMap(
+              testTree
+            )
           if (trees.isEmpty) {
             Nil
           } else {
@@ -273,10 +303,12 @@ object Example extends AutoPlugin {
             case Defn.Macro(_, name, _, _, _, _) =>
               leafTestTree(name)
             case Defn.ExtensionGroup(_, paramss, stat) =>
-              val Some(name) = paramss.collectFirst(Function.unlift(_.collectFirst {
-                case param if !param.mods.exists(Set(Mod.Implicit, Mod.Using)) =>
-                  param.name
-              }))
+              val Some(name) =
+                paramss.collectFirst(Function.unlift(_.collectFirst {
+                  case param
+                      if !param.mods.exists(Set(Mod.Implicit, Mod.Using)) =>
+                    param.name
+                }))
               defnTestTree(
                 name,
                 stat match {
@@ -304,9 +336,11 @@ object Example extends AutoPlugin {
 
   override def requires: Plugins = JvmPlugin
 
-  /** Contains sbt setting keys, which will be automatically imported into your `build.sbt`.
+  /** Contains sbt setting keys, which will be automatically imported into your
+    * `build.sbt`.
     *
-    * You need to manually import this [[autoImport]] object in `.scala` files, e.g. an sbt plugin, or this Scaladoc.
+    * You need to manually import this [[autoImport]] object in `.scala` files,
+    * e.g. an sbt plugin, or this Scaladoc.
     *
     * {{{
     * import com.thoughtworks.Example.autoImport._
@@ -315,16 +349,19 @@ object Example extends AutoPlugin {
   object autoImport {
 
     /** Generate unit tests from examples in Scaladoc. */
-    val generateExample = taskKey[Seq[File]]("Generate unit tests from examples in Scaladoc.")
+    val generateExample =
+      taskKey[Seq[File]]("Generate unit tests from examples in Scaladoc.")
 
-    /** Super types of the generated unit test suite class for examples in Scaladoc.
+    /** Super types of the generated unit test suite class for examples in
+      * Scaladoc.
       *
       * @example
-      *   The default value of this [[exampleSuperTypes]] settings are [[org.scalatest.freespec.AnyFreeSpec]] and
+      *   The default value of this [[exampleSuperTypes]] settings are
+      *   [[org.scalatest.freespec.AnyFreeSpec]] and
       *   [[org.scalatest.matchers.should.Matchers]].
       *
-      * You may want to replace [[org.scalatest.freespec.AnyFreeSpec]] to [[org.scalatest.freespec.AsyncFreeSpec]] for
-      * asynchronous tests:
+      * You may want to replace [[org.scalatest.freespec.AnyFreeSpec]] to
+      * [[org.scalatest.freespec.AsyncFreeSpec]] for asynchronous tests:
       *
       * {{{
       * import scala.meta._
@@ -346,15 +383,20 @@ object Example extends AutoPlugin {
       * exampleSuperTypes += init"_root_.org.scalatest.Inside"
       * }}}
       *
-      * Then the [[org.scalatest.Inside.inside inside]] function should be available for your Scaladoc examples.
+      * Then the [[org.scalatest.Inside.inside inside]] function should be
+      * available for your Scaladoc examples.
       */
     val exampleSuperTypes =
-      taskKey[List[scala.meta.Init]]("Super types of the generated unit test suite class for examples in Scaladoc.")
+      taskKey[List[scala.meta.Init]](
+        "Super types of the generated unit test suite class for examples in Scaladoc."
+      )
 
-    /** The package of the generated unit test suite class for examples in Scaladoc.
+    /** The package of the generated unit test suite class for examples in
+      * Scaladoc.
       *
       * @example
-      *   The value for this [[examplePackageRef]] setting can be built from a `q` quasiquote:
+      *   The value for this [[examplePackageRef]] setting can be built from a
+      *   `q` quasiquote:
       *
       * {{{
       * import scala.meta._
@@ -362,13 +404,16 @@ object Example extends AutoPlugin {
       * }}}
       */
     val examplePackageRef =
-      taskKey[Term.Ref]("The package of the generated unit test suite class for examples in Scaladoc.")
+      taskKey[Term.Ref](
+        "The package of the generated unit test suite class for examples in Scaladoc."
+      )
 
-    /** The class name of the generated unit test suite class for examples in Scaladoc.
+    /** The class name of the generated unit test suite class for examples in
+      * Scaladoc.
       *
       * @example
-      *   The value for this [[exampleClassName]] setting can be built from a [[scala.meta.XtensionQuasiquoteType.t t]]
-      *   quasiquote:
+      *   The value for this [[exampleClassName]] setting can be built from a
+      *   [[scala.meta.XtensionQuasiquoteType.t t]] quasiquote:
       *
       * {{{
       * import scala.meta._
@@ -376,12 +421,15 @@ object Example extends AutoPlugin {
       * }}}
       */
     val exampleClassName =
-      taskKey[Type.Name]("The class name of the generated unit test suite class for examples in Scaladoc.")
+      taskKey[Type.Name](
+        "The class name of the generated unit test suite class for examples in Scaladoc."
+      )
 
     @deprecated("4.1.0", "Use `exampleClassName` instead.")
     val exampleClassRef = exampleClassName
 
-    val exampleDialect = taskKey[Dialect]("The source code dialect used to parse Scaladoc")
+    val exampleDialect =
+      taskKey[Dialect]("The source code dialect used to parse Scaladoc")
   }
   import autoImport._
 
@@ -399,22 +447,27 @@ object Example extends AutoPlugin {
     },
     examplePackageRef := {
       val organizationPackageRef =
-        new ScalametaParser(Input.String(organization.value.replace('-', '_')))((Test / exampleDialect).value)
+        new ScalametaParser(Input.String(organization.value.replace('-', '_')))(
+          (Test / exampleDialect).value
+        )
           .parseRule(_.path(thisOK = false))
       val splitName = name.value.split('-')
-      splitName.view(0, splitName.length - 1).foldLeft(organizationPackageRef) { (packageRef, subpackage) =>
-        q"$packageRef.${Term.Name(subpackage)}"
+      splitName.view(0, splitName.length - 1).foldLeft(organizationPackageRef) {
+        (packageRef, subpackage) =>
+          q"$packageRef.${Term.Name(subpackage)}"
       }
 
     },
     generateExample / fileInputs := (Compile / unmanagedSources / fileInputs).value,
     generateExample := {
-      val outputFile = (sourceManaged in Test).value / "sbt-example-generated.scala"
+      val outputFile =
+        (sourceManaged in Test).value / "sbt-example-generated.scala"
       val logger = (streams in generateExample).value.log
       val compileDialect = (Compile / exampleDialect).value
       val testDialect = (Test / autoImport.exampleDialect).value
       val content = generateExample.inputFiles.view.flatMap { file =>
-        val source = new ScalametaParser(Input.File(file))(compileDialect).parseSource()
+        val source =
+          new ScalametaParser(Input.File(file))(compileDialect).parseSource()
         exampleStats(source, logger, testDialect)
       }.toList
       val generatedFileTree = q"""
@@ -424,7 +477,11 @@ object Example extends AutoPlugin {
           }
         }
       """
-      IO.write(outputFile, generatedFileTree.syntax, scala.io.Codec.UTF8.charSet)
+      IO.write(
+        outputFile,
+        generatedFileTree.syntax,
+        scala.io.Codec.UTF8.charSet
+      )
       Seq(outputFile)
     },
     (sourceGenerators in Test) += {
