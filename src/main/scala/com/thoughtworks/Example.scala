@@ -23,16 +23,11 @@ import scala.reflect.NameTransformer
   *
   * ==Step 1: Add this plug-in in your sbt settings==
   *
-  * `<pre>
-  * // project/plugins.sbt
-  * addSbtPlugin("com.thoughtworks.example" % "sbt-example" % "latest.release")
-  * </pre>`
+  * `<pre> // project/plugins.sbt addSbtPlugin("com.thoughtworks.example" %
+  * "sbt-example" % "latest.release") </pre>`
   *
-  * `<pre>
-  * // build.sbt
-  * enablePlugins(Example)
-  * libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.10" % Test
-  * </pre>`
+  * `<pre> // build.sbt enablePlugins(Example) libraryDependencies +=
+  * "org.scalatest" %% "scalatest" % "3.2.10" % Test </pre>`
   *
   * ==Step 2: Run tests==
   *
