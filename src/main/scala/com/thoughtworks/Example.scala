@@ -25,12 +25,15 @@ import scala.reflect.NameTransformer
   *
   * `<pre>
   * // project/plugins.sbt
+  *
   * addSbtPlugin("com.thoughtworks.example" % "sbt-example" % "latest.release")
   * </pre>`
   *
   * `<pre>
   * // build.sbt
+  *
   * enablePlugins(Example)
+  *
   * libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.10" % Test
   * </pre>`
   *
