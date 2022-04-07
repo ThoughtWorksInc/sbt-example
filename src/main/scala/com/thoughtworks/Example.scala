@@ -23,14 +23,12 @@ import scala.reflect.NameTransformer
   *
   * ==Step 1: Add this plug-in in your sbt settings==
   *
-  * `<pre>
-  * // project/plugins.sbt
+  * `<pre> // project/plugins.sbt
   *
   * addSbtPlugin("com.thoughtworks.example" % "sbt-example" % "latest.release")
   * </pre>`
   *
-  * `<pre>
-  * // build.sbt
+  * `<pre> // build.sbt
   *
   * enablePlugins(Example)
   *
