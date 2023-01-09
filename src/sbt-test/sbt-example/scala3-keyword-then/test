@@ -1,0 +1,2 @@
+> test
+$ exists target/scala-3.2.1/src_managed/test/sbt-example-generated.scala
