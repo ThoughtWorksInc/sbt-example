@@ -248,7 +248,7 @@ object Example extends AutoPlugin {
 
     def testTree(tree: Tree): Seq[Stat] = {
       def defnTestTree(name: Name, stats: List[Stat]) = {
-        val title = name.syntax
+        val title = name.value
         val trees =
           scaladocTestTree(comments.leading(tree)) :::
             stats.flatMap(testTree)
@@ -264,7 +264,7 @@ object Example extends AutoPlugin {
         defnTestTree(name, template.early ::: template.stats)
       }
       def leafTestTree(name: Name) = {
-        val title = name.syntax
+        val title = name.value
         val trees = scaladocTestTree(comments.leading(tree))
         if (trees.isEmpty) {
           Nil
@@ -485,7 +485,7 @@ object Example extends AutoPlugin {
       """
       IO.write(
         outputFile,
-        generatedFileTree.syntax,
+        (testDialect, generatedFileTree).syntax,
         scala.io.Codec.UTF8.charSet
       )
       Seq(outputFile)
