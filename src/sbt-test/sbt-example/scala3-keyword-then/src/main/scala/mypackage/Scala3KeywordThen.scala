@@ -1,5 +1,3 @@
-
-
 /** Testing Scala 3 keyword
   * @example
   *   Call to `then` should compile
