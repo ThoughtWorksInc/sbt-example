@@ -264,7 +264,9 @@ object Example extends AutoPlugin {
         defnTestTree(name, template.early ::: template.stats)
       }
       def leafTestTree(name: Name) = {
-        val title = name.value
+        titledTestTree(name.value)
+      }
+      def titledTestTree(title: String) = {
         val trees = scaladocTestTree(comments.leading(tree))
         if (trees.isEmpty) {
           Nil
@@ -290,6 +292,15 @@ object Example extends AutoPlugin {
           }
         case Pkg.Object(_, name, template: Template) =>
           templateTestTree(name, template)
+        case declTree: Decl =>
+          declTree match {
+            case declDef: Decl.Def =>
+              leafTestTree(declDef.name)
+            case Decl.Val(_, pats, _) =>
+              titledTestTree(pats.toString())
+            case Decl.Var(_, pats, _) =>
+              titledTestTree(pats.toString())
+          }
         case defnTree: Defn =>
           defnTree match {
             case Defn.Object(_, name, template: Template) =>
