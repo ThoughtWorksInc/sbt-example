@@ -10,7 +10,7 @@ libraryDependencies += "org.scalameta" %% "scalameta" % "4.7.3"
 
 libraryDependencies += scalaOrganization.value % "scala-reflect" % scalaVersion.value % Provided
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.15" % Provided // For Scaladoc links
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.17" % Provided // For Scaladoc links
 
 scalacOptions ++= Seq("-Ypatmat-exhaust-depth", "off")
 
