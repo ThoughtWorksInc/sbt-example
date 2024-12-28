@@ -19,7 +19,7 @@ jobs:
           - 2.12.15
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Need the git history for sbt-dynver to determine the version
       - name: Set up JDK 11
