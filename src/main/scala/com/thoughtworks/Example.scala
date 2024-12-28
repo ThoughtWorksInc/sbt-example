@@ -478,8 +478,8 @@ object Example extends AutoPlugin {
     generateExample / fileInputs := (Compile / unmanagedSources / fileInputs).value,
     generateExample := {
       val outputFile =
-        (sourceManaged in Test).value / "sbt-example-generated.scala"
-      val logger = (streams in generateExample).value.log
+        (Test / sourceManaged).value / "sbt-example-generated.scala"
+      val logger = (generateExample / streams).value.log
       val compileDialect = (Compile / exampleDialect).value
       val testDialect = (Test / autoImport.exampleDialect).value
       val content = generateExample.inputFiles.view.flatMap { file =>
@@ -501,7 +501,7 @@ object Example extends AutoPlugin {
       )
       Seq(outputFile)
     },
-    (sourceGenerators in Test) += {
+    (Test / sourceGenerators) += {
       generateExample.taskValue
     }
   ) ++
