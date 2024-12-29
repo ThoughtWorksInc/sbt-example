@@ -305,42 +305,43 @@ object Example extends AutoPlugin {
           defnTree match {
             case Defn.Object(_, name, template: Template) =>
               templateTestTree(name, template)
-            case Defn.Trait(_, name, _, _, template: Template) =>
-              templateTestTree(name, template)
-            case Defn.Class(_, name, _, _, template: Template) =>
-              templateTestTree(name, template)
-            case Defn.Def(_, name, _, _, _, _) =>
-              leafTestTree(name)
-            case Defn.Type(_, name, _, _) =>
-              leafTestTree(name)
+            case trai : Defn.Trait =>
+              templateTestTree(trai.name, trai.templ)
+            case clazz: Defn.Class =>
+              templateTestTree(clazz.name, clazz.templ)
+            case de: Defn.Def =>
+              leafTestTree(de.name)
+            case typ: Defn.Type =>
+              leafTestTree(typ.name)
             case Defn.Val(_, Seq(Pat.Var(name)), _, _) =>
               leafTestTree(name)
-            case Defn.Var(_, Seq(Pat.Var(name)), _, _) =>
+            case va: Defn.Var if va.pats.length == 1 && va.pats.head.isInstanceOf[Pat.Var] =>
+              val Seq(Pat.Var(name)) = va.pats
               leafTestTree(name)
-            case Defn.Macro(_, name, _, _, _, _) =>
-              leafTestTree(name)
-            case Defn.ExtensionGroup(_, paramss, stat) =>
+            case macr: Defn.Macro =>
+              leafTestTree(macr.name)
+            case group: Defn.ExtensionGroup =>
               val Some(name) =
-                paramss.collectFirst(Function.unlift(_.collectFirst {
+                group.paramss.collectFirst(Function.unlift(_.collectFirst {
                   case param
                       if !param.mods.exists(Set(Mod.Implicit, Mod.Using)) =>
                     param.name
                 }))
               defnTestTree(
                 name,
-                stat match {
+                group.body match {
                   case Term.Block(stats) =>
                     stats
                   case stat => List(stat)
                 }
               )
-            case Defn.Given(_, name, _, _, template) =>
-              templateTestTree(name, template)
-            case Defn.GivenAlias(_, name, _, _, _, _) =>
-              leafTestTree(name)
+            case give: Defn.Given =>
+              templateTestTree(give.name, give.templ)
+            case alias: Defn.GivenAlias =>
+              leafTestTree(alias.name)
           }
-        case Ctor.Secondary(_, name, _, _, _) =>
-          leafTestTree(name)
+        case ctor: Ctor.Secondary =>
+          leafTestTree(ctor.name)
         case _ =>
           Nil
       }
