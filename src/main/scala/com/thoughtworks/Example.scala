@@ -349,10 +349,6 @@ object Example extends AutoPlugin {
 
   }
 
-  override def trigger: PluginTrigger = noTrigger
-
-  override def requires: Plugins = JvmPlugin
-
   /** Contains sbt setting keys, which will be automatically imported into your
     * `build.sbt`.
     *
