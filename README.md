@@ -1,4 +1,4 @@
-# sbt-example [<img align="right" src="https://www.thoughtworks.com/imgs/tw-logo.png" title="ThoughtWorks" height="15"/>](http://thoughtworks.com)
+# sbt-example
 
 [![Scala CI](https://github.com/ThoughtWorksInc/sbt-example/actions/workflows/scala.yml/badge.svg)](https://github.com/ThoughtWorksInc/sbt-example/actions/workflows/scala.yml)
 [![Scaladoc](https://javadoc.io/badge/com.thoughtworks.example/sbt-example_2.12_1.0/latest.svg?label=scaladoc)](https://javadoc.io/page/com.thoughtworks.example/sbt-example_2.12_1.0/12/com/thoughtworks/Example$.html)
