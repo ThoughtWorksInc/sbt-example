@@ -12,12 +12,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        scala:
-          - 2.12.20
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,14 +30,11 @@ jobs:
             ~/.ivy2/cache/
             ~/.sbt/
             ~/.coursier/
-          key: |
-            ${{runner.os}}-${{matrix.scala}}-${{hashFiles('**/*.sbt')}}-${{matrix.sbt-args}}
-            ${{runner.os}}-${{matrix.scala}}-${{hashFiles('**/*.sbt')}}-
-            ${{runner.os}}-${{matrix.scala}}-
+          key: ${{hashFiles('**/*.sbt')}}
       - name: Run tests
-        run: sbt ${{matrix.sbt-args}} ++${{ matrix.scala }} test scripted
+        run: sbt test scripted
       - name: Publish to Maven Central Repository
         env:
           GITHUB_PERSONAL_ACCESS_TOKEN: ${{secrets.PERSONAL_ACCESS_TOKEN}}
         if: ${{ env.GITHUB_PERSONAL_ACCESS_TOKEN != '' && github.event_name != 'pull_request' }}
-        run: sbt ${{matrix.sbt-args}} ++${{ matrix.scala }} "set every Seq(sonatypeSessionName := \"${{github.workflow}} ${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}-$$ ${{ matrix.scala }}\", publishTo := sonatypePublishToBundle.value)" publishSigned sonatypeBundleRelease
+        run: sbt "set every Seq(sonatypeSessionName := \"${{github.workflow}} ${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}-$$ 2.12.20\", publishTo := sonatypePublishToBundle.value)" publishSigned sonatypeBundleRelease

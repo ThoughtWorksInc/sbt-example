@@ -2,9 +2,11 @@ enablePlugins(SbtPlugin)
 
 scriptedLaunchOpts += "-Dplugin.version=" + version.value
 
-organization in ThisBuild := "com.thoughtworks.example"
+ThisBuild / organization := "com.thoughtworks.example"
 
 name := "sbt-example"
+
+scalaVersion := "2.12.20"
 
 libraryDependencies += "org.scalameta" %% "scalameta" % "4.7.3"
 
