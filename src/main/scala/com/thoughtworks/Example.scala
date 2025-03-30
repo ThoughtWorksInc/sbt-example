@@ -294,6 +294,10 @@ object Example extends AutoPlugin {
           templateTestTree(name, template)
         case declTree: Decl =>
           declTree match {
+            case declType: Decl.Type =>
+              leafTestTree(declType.name)
+            case declGiven: Decl.Given =>
+              leafTestTree(declGiven.name)
             case declDef: Decl.Def =>
               leafTestTree(declDef.name)
             case Decl.Val(_, pats, _) =>
