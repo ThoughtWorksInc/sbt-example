@@ -305,7 +305,7 @@ object Example extends AutoPlugin {
           defnTree match {
             case Defn.Object(_, name, template: Template) =>
               templateTestTree(name, template)
-            case trai : Defn.Trait =>
+            case trai: Defn.Trait =>
               templateTestTree(trai.name, trai.templ)
             case clazz: Defn.Class =>
               templateTestTree(clazz.name, clazz.templ)
@@ -315,7 +315,8 @@ object Example extends AutoPlugin {
               leafTestTree(typ.name)
             case Defn.Val(_, Seq(Pat.Var(name)), _, _) =>
               leafTestTree(name)
-            case va: Defn.Var if va.pats.length == 1 && va.pats.head.isInstanceOf[Pat.Var] =>
+            case va: Defn.Var
+                if va.pats.length == 1 && va.pats.head.isInstanceOf[Pat.Var] =>
               val Seq(Pat.Var(name)) = va.pats
               leafTestTree(name)
             case macr: Defn.Macro =>
