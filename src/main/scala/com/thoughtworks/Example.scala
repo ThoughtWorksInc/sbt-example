@@ -3,6 +3,7 @@ import java.io.File
 
 import sbt.Keys._
 import sbt._
+import sbtcompat.PluginCompat._
 import sbt.nio.Keys._
 import sbt.plugins.JvmPlugin
 
