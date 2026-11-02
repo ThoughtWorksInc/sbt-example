@@ -384,6 +384,7 @@ object Example extends AutoPlugin {
       *
       * {{{
       * import scala.meta._
+      * import sbt.Def
       * import sbtcompat.PluginCompat._
       * exampleSuperTypes := Def.uncached(exampleSuperTypes.value.map {
       *   case init"_root_.org.scalatest.freespec.AnyFreeSpec" =>
@@ -400,6 +401,7 @@ object Example extends AutoPlugin {
       *
       * {{{
       * import scala.meta._
+      * import sbt.Def
       * import sbtcompat.PluginCompat._
       * exampleSuperTypes := Def.uncached(
       *   exampleSuperTypes.value :+ init"_root_.org.scalatest.Inside"
@@ -423,6 +425,7 @@ object Example extends AutoPlugin {
       *
       * {{{
       * import scala.meta._
+      * import sbt.Def
       * import sbtcompat.PluginCompat._
       * examplePackageRef := Def.uncached(q"_root_.com.yourpackagename.yourlibraryname")
       * }}}
@@ -441,6 +444,7 @@ object Example extends AutoPlugin {
       *
       * {{{
       * import scala.meta._
+      * import sbt.Def
       * import sbtcompat.PluginCompat._
       * exampleClassName := Def.uncached(t"YourTestClassName")
       * }}}
