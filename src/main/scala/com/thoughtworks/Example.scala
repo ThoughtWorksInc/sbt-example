@@ -384,12 +384,13 @@ object Example extends AutoPlugin {
       *
       * {{{
       * import scala.meta._
-      * exampleSuperTypes := exampleSuperTypes.value.map {
+      * import sbtcompat.PluginCompat._
+      * exampleSuperTypes := Def.uncached(exampleSuperTypes.value.map {
       *   case init"_root_.org.scalatest.freespec.AnyFreeSpec" =>
       *     init"_root_.org.scalatest.freespec.AsyncFreeSpec"
       *   case otherTrait =>
       *     otherTrait
-      * }
+      * })
       * }}}
       *
       * Note that each super type can be built from an `init` quasiquote.
@@ -399,13 +400,16 @@ object Example extends AutoPlugin {
       *
       * {{{
       * import scala.meta._
-      * exampleSuperTypes += init"_root_.org.scalatest.Inside"
+      * import sbtcompat.PluginCompat._
+      * exampleSuperTypes := Def.uncached(
+      *   exampleSuperTypes.value :+ init"_root_.org.scalatest.Inside"
+      * )
       * }}}
       *
       * Then the [[org.scalatest.Inside.inside inside]] function should be
       * available for your Scaladoc examples.
       */
-    @transient val exampleSuperTypes =
+    val exampleSuperTypes =
       taskKey[List[scala.meta.Init]](
         "Super types of the generated unit test suite class for examples in Scaladoc."
       )
@@ -419,10 +423,11 @@ object Example extends AutoPlugin {
       *
       * {{{
       * import scala.meta._
-      * examplePackageRef := q"_root_.com.yourpackagename.yourlibraryname"
+      * import sbtcompat.PluginCompat._
+      * examplePackageRef := Def.uncached(q"_root_.com.yourpackagename.yourlibraryname")
       * }}}
       */
-    @transient val examplePackageRef =
+    val examplePackageRef =
       taskKey[Term.Ref](
         "The package of the generated unit test suite class for examples in Scaladoc."
       )
@@ -436,10 +441,11 @@ object Example extends AutoPlugin {
       *
       * {{{
       * import scala.meta._
-      * exampleClassName := t"YourTestClassName"
+      * import sbtcompat.PluginCompat._
+      * exampleClassName := Def.uncached(t"YourTestClassName")
       * }}}
       */
-    @transient val exampleClassName =
+    val exampleClassName =
       taskKey[Type.Name](
         "The class name of the generated unit test suite class for examples in Scaladoc."
       )
@@ -447,24 +453,26 @@ object Example extends AutoPlugin {
     @deprecated("4.1.0", "Use `exampleClassName` instead.")
     val exampleClassRef = exampleClassName
 
-    @transient val exampleDialect =
+    val exampleDialect =
       taskKey[Dialect]("The source code dialect used to parse Scaladoc")
   }
   import autoImport._
 
   override def globalSettings: Seq[Def.Setting[_]] = Seq(
-    exampleSuperTypes := List(
-      init"_root_.org.scalatest.freespec.AnyFreeSpec",
-      init"_root_.org.scalatest.matchers.should.Matchers"
+    exampleSuperTypes := Def.uncached(
+      List(
+        init"_root_.org.scalatest.freespec.AnyFreeSpec",
+        init"_root_.org.scalatest.matchers.should.Matchers"
+      )
     )
   )
 
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
-    exampleClassName := {
+    exampleClassName := Def.uncached {
       val splitName = name.value.split('-')
       Type.Name(NameEncoder.encode(raw"""${splitName.last}Example"""))
     },
-    examplePackageRef := {
+    examplePackageRef := Def.uncached {
       val organizationPackageRef =
         new ScalametaParser(Input.String(organization.value.replace('-', '_')))(
           (Test / exampleDialect).value
@@ -508,7 +516,7 @@ object Example extends AutoPlugin {
     }
   ) ++
     (for (configuration <- Seq(Test, Compile)) yield {
-      configuration / exampleDialect := {
+      configuration / exampleDialect := Def.uncached {
         VersionNumber((configuration / scalaVersion).value).numbers match {
           case Seq(3L, _*) =>
             dialects.Scala3

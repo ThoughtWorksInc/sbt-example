@@ -37,4 +37,5 @@ scalacOptions ++= {
 enablePlugins(Example)
 
 import scala.meta._
-examplePackageRef := q"com.thoughtworks"
+import sbtcompat.PluginCompat._
+examplePackageRef := Def.uncached(q"com.thoughtworks")
