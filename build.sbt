@@ -13,6 +13,9 @@ ThisBuild / pluginCrossBuild / sbtVersion := {
 
 name := "sbt-example"
 
+// Exposes Def.uncached on sbt 1.x as a no-op, so the sources are shared with sbt 2.x
+addSbtPlugin("com.github.sbt" % "sbt2-compat" % "0.2.0")
+
 libraryDependencies += "org.scalameta" %% "scalameta" % "4.13.10"
 
 libraryDependencies ++= {
