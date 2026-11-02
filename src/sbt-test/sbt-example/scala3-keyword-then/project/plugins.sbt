@@ -7,4 +7,4 @@ sys.props.get("plugin.version") match {
     )
 }
 
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.12.0")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.22.0")

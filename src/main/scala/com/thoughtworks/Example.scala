@@ -11,7 +11,6 @@ import scala.meta._
 import scala.meta.contrib.{AssociatedComments, DocToken, ScaladocParser}
 import scala.meta.internal.parsers.ScalametaParser
 import scala.meta.internal.tokenizers.PlatformTokenizerCache
-import scala.reflect.NameTransformer
 
 /** Generates unit tests from examples in Scaladoc.
   *
@@ -462,7 +461,7 @@ object Example extends AutoPlugin {
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
     exampleClassName := {
       val splitName = name.value.split('-')
-      Type.Name(NameTransformer.encode(raw"""${splitName.last}Example"""))
+      Type.Name(NameEncoder.encode(raw"""${splitName.last}Example"""))
     },
     examplePackageRef := {
       val organizationPackageRef =

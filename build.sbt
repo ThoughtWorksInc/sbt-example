@@ -2,17 +2,34 @@ enablePlugins(SbtPlugin)
 
 scriptedLaunchOpts += "-Dplugin.version=" + version.value
 
-organization in ThisBuild := "com.thoughtworks.example"
+ThisBuild / organization := "com.thoughtworks.example"
+
+ThisBuild / pluginCrossBuild / sbtVersion := {
+  scalaBinaryVersion.value match {
+    case "2.12" => sbtVersion.value
+    case _      => "2.0.0"
+  }
+}
 
 name := "sbt-example"
 
 libraryDependencies += "org.scalameta" %% "scalameta" % "4.13.10"
 
-libraryDependencies += scalaOrganization.value % "scala-reflect" % scalaVersion.value % Provided
+libraryDependencies ++= {
+  if (scalaBinaryVersion.value == "2.12")
+    Seq(scalaOrganization.value % "scala-reflect" % scalaVersion.value % Provided)
+  else
+    Seq.empty
+}
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.19" % Provided // For Scaladoc links
 
-scalacOptions ++= Seq("-Ypatmat-exhaust-depth", "off")
+scalacOptions ++= {
+  if (scalaBinaryVersion.value == "2.12")
+    Seq("-Ypatmat-exhaust-depth", "off")
+  else
+    Seq.empty
+}
 
 enablePlugins(Example)
 
