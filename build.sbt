@@ -22,7 +22,7 @@ libraryDependencies ++= {
     Seq.empty
 }
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.19" % Provided // For Scaladoc links
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.20" % Provided // For Scaladoc links
 
 scalacOptions ++= {
   if (scalaBinaryVersion.value == "2.12")

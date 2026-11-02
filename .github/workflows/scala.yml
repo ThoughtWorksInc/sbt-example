@@ -53,4 +53,4 @@ jobs:
         env:
           GITHUB_PERSONAL_ACCESS_TOKEN: ${{secrets.PERSONAL_ACCESS_TOKEN}}
         if: ${{ env.GITHUB_PERSONAL_ACCESS_TOKEN != '' && github.event_name != 'pull_request' && ((startsWith(matrix.scala, '2.') && matrix.java == 11) || (startsWith(matrix.scala, '3.') && matrix.java == 17)) }}
-        run: sbt ${{matrix.sbt-args}} ++${{ matrix.scala }} "set every Seq(sonatypeSessionName := \"${{github.workflow}} ${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}-$$ ${{ matrix.scala }}\", publishTo := sonatypePublishToBundle.value)" publishSigned sonatypeBundleRelease
+        run: sbt ${{matrix.sbt-args}} ++${{ matrix.scala }} publishSigned sonaRelease
