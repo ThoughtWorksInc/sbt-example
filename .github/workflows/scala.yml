@@ -18,21 +18,15 @@ jobs:
         scala:
           - 2.12.20
           - 3.8.4
-        java:
-          - 11
-          - 17
-        exclude:
-          - scala: 3.8.4
-            java: 11
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Need the git history for sbt-dynver to determine the version
-      - name: Set up JDK ${{ matrix.java }}
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: ${{ matrix.java }}
+          java-version: "17"
           distribution: temurin
       - uses: sbt/setup-sbt@v1
       - name: Cache SBT
@@ -44,14 +38,13 @@ jobs:
             ~/.sbt/
             ~/.coursier/
           key: |
-            ${{runner.os}}-${{matrix.scala}}-${{matrix.java}}-${{hashFiles('**/*.sbt')}}-${{matrix.sbt-args}}
-            ${{runner.os}}-${{matrix.scala}}-${{matrix.java}}-${{hashFiles('**/*.sbt')}}-
-            ${{runner.os}}-${{matrix.scala}}-${{matrix.java}}-
+            ${{runner.os}}-${{matrix.scala}}-${{hashFiles('**/*.sbt')}}-${{matrix.sbt-args}}
+            ${{runner.os}}-${{matrix.scala}}-${{hashFiles('**/*.sbt')}}-
+            ${{runner.os}}-${{matrix.scala}}-
       - name: Run tests
         run: sbt ${{matrix.sbt-args}} ++${{ matrix.scala }} test scripted
-      # Publish each Scala version once, on JDK 17.
       - name: Publish to Maven Central Repository
         env:
           GITHUB_PERSONAL_ACCESS_TOKEN: ${{secrets.PERSONAL_ACCESS_TOKEN}}
-        if: ${{ env.GITHUB_PERSONAL_ACCESS_TOKEN != '' && github.event_name != 'pull_request' && matrix.java == 17 }}
+        if: ${{ env.GITHUB_PERSONAL_ACCESS_TOKEN != '' && github.event_name != 'pull_request' }}
         run: sbt ${{matrix.sbt-args}} ++${{ matrix.scala }} publishSigned sonaRelease
