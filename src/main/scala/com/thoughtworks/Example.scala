@@ -84,7 +84,7 @@ import scala.meta.internal.tokenizers.PlatformTokenizerCache
   * The test case is inside an [[org.scalatest.freespec.AnyFreeSpec]]
   *
   * {{{
-  * this should be(an[AnyFreeSpec])
+  * this.isInstanceOf[AnyFreeSpec] should be(true)
   * }}}
   * @author
   *   杨博 (Yang Bo) &lt;pop.atry@gmail.com&gt;
