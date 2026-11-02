@@ -405,7 +405,7 @@ object Example extends AutoPlugin {
       * Then the [[org.scalatest.Inside.inside inside]] function should be
       * available for your Scaladoc examples.
       */
-    val exampleSuperTypes =
+    @transient val exampleSuperTypes =
       taskKey[List[scala.meta.Init]](
         "Super types of the generated unit test suite class for examples in Scaladoc."
       )
@@ -422,7 +422,7 @@ object Example extends AutoPlugin {
       * examplePackageRef := q"_root_.com.yourpackagename.yourlibraryname"
       * }}}
       */
-    val examplePackageRef =
+    @transient val examplePackageRef =
       taskKey[Term.Ref](
         "The package of the generated unit test suite class for examples in Scaladoc."
       )
@@ -439,7 +439,7 @@ object Example extends AutoPlugin {
       * exampleClassName := t"YourTestClassName"
       * }}}
       */
-    val exampleClassName =
+    @transient val exampleClassName =
       taskKey[Type.Name](
         "The class name of the generated unit test suite class for examples in Scaladoc."
       )
@@ -447,26 +447,24 @@ object Example extends AutoPlugin {
     @deprecated("4.1.0", "Use `exampleClassName` instead.")
     val exampleClassRef = exampleClassName
 
-    val exampleDialect =
+    @transient val exampleDialect =
       taskKey[Dialect]("The source code dialect used to parse Scaladoc")
   }
   import autoImport._
 
   override def globalSettings: Seq[Def.Setting[_]] = Seq(
-    exampleSuperTypes := Def.uncached(
-      List(
-        init"_root_.org.scalatest.freespec.AnyFreeSpec",
-        init"_root_.org.scalatest.matchers.should.Matchers"
-      )
+    exampleSuperTypes := List(
+      init"_root_.org.scalatest.freespec.AnyFreeSpec",
+      init"_root_.org.scalatest.matchers.should.Matchers"
     )
   )
 
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
-    exampleClassName := Def.uncached {
+    exampleClassName := {
       val splitName = name.value.split('-')
       Type.Name(NameEncoder.encode(raw"""${splitName.last}Example"""))
     },
-    examplePackageRef := Def.uncached {
+    examplePackageRef := {
       val organizationPackageRef =
         new ScalametaParser(Input.String(organization.value.replace('-', '_')))(
           (Test / exampleDialect).value
@@ -510,7 +508,7 @@ object Example extends AutoPlugin {
     }
   ) ++
     (for (configuration <- Seq(Test, Compile)) yield {
-      configuration / exampleDialect := Def.uncached {
+      configuration / exampleDialect := {
         VersionNumber((configuration / scalaVersion).value).numbers match {
           case Seq(3L, _*) =>
             dialects.Scala3
