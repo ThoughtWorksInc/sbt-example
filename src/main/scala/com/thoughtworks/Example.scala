@@ -3,6 +3,7 @@ import java.io.File
 
 import sbt.Keys._
 import sbt._
+import sbtcompat.PluginCompat._
 import sbt.nio.Keys._
 import sbt.plugins.JvmPlugin
 
@@ -11,7 +12,6 @@ import scala.meta._
 import scala.meta.contrib.{AssociatedComments, DocToken, ScaladocParser}
 import scala.meta.internal.parsers.ScalametaParser
 import scala.meta.internal.tokenizers.PlatformTokenizerCache
-import scala.reflect.NameTransformer
 
 /** Generates unit tests from examples in Scaladoc.
   *
@@ -84,7 +84,7 @@ import scala.reflect.NameTransformer
   * The test case is inside an [[org.scalatest.freespec.AnyFreeSpec]]
   *
   * {{{
-  * this should be(an[AnyFreeSpec])
+  * this.isInstanceOf[AnyFreeSpec] should be(true)
   * }}}
   * @author
   *   杨博 (Yang Bo) &lt;pop.atry@gmail.com&gt;
@@ -277,7 +277,7 @@ object Example extends AutoPlugin {
         }
       }
       tree match {
-        case Pkg(termRef, children) =>
+        case scala.meta.Pkg(termRef, children) =>
           val packageName = termRef.toString
           val trees =
             scaladocTestTree(comments.leading(tree)) ::: children.flatMap(
@@ -290,7 +290,7 @@ object Example extends AutoPlugin {
               ..$trees
             }""" :: Nil
           }
-        case Pkg.Object(_, name, template: Template) =>
+        case scala.meta.Pkg.Object(_, name, template: Template) =>
           templateTestTree(name, template)
         case declTree: Decl =>
           declTree match {
@@ -384,12 +384,14 @@ object Example extends AutoPlugin {
       *
       * {{{
       * import scala.meta._
-      * exampleSuperTypes := exampleSuperTypes.value.map {
+      * import sbt.Def
+      * import sbtcompat.PluginCompat._
+      * exampleSuperTypes := Def.uncached(exampleSuperTypes.value.map {
       *   case init"_root_.org.scalatest.freespec.AnyFreeSpec" =>
       *     init"_root_.org.scalatest.freespec.AsyncFreeSpec"
       *   case otherTrait =>
       *     otherTrait
-      * }
+      * })
       * }}}
       *
       * Note that each super type can be built from an `init` quasiquote.
@@ -399,7 +401,11 @@ object Example extends AutoPlugin {
       *
       * {{{
       * import scala.meta._
-      * exampleSuperTypes += init"_root_.org.scalatest.Inside"
+      * import sbt.Def
+      * import sbtcompat.PluginCompat._
+      * exampleSuperTypes := Def.uncached(
+      *   exampleSuperTypes.value :+ init"_root_.org.scalatest.Inside"
+      * )
       * }}}
       *
       * Then the [[org.scalatest.Inside.inside inside]] function should be
@@ -419,7 +425,9 @@ object Example extends AutoPlugin {
       *
       * {{{
       * import scala.meta._
-      * examplePackageRef := q"_root_.com.yourpackagename.yourlibraryname"
+      * import sbt.Def
+      * import sbtcompat.PluginCompat._
+      * examplePackageRef := Def.uncached(q"_root_.com.yourpackagename.yourlibraryname")
       * }}}
       */
     val examplePackageRef =
@@ -436,7 +444,9 @@ object Example extends AutoPlugin {
       *
       * {{{
       * import scala.meta._
-      * exampleClassName := t"YourTestClassName"
+      * import sbt.Def
+      * import sbtcompat.PluginCompat._
+      * exampleClassName := Def.uncached(t"YourTestClassName")
       * }}}
       */
     val exampleClassName =
@@ -453,38 +463,40 @@ object Example extends AutoPlugin {
   import autoImport._
 
   override def globalSettings: Seq[Def.Setting[_]] = Seq(
-    exampleSuperTypes := List(
-      init"_root_.org.scalatest.freespec.AnyFreeSpec",
-      init"_root_.org.scalatest.matchers.should.Matchers"
+    exampleSuperTypes := Def.uncached(
+      List(
+        init"_root_.org.scalatest.freespec.AnyFreeSpec",
+        init"_root_.org.scalatest.matchers.should.Matchers"
+      )
     )
   )
 
   override def projectSettings: Seq[Def.Setting[_]] = Seq(
-    exampleClassName := {
+    exampleClassName := Def.uncached {
       val splitName = name.value.split('-')
-      Type.Name(NameTransformer.encode(raw"""${splitName.last}Example"""))
+      Type.Name(NameEncoder.encode(raw"""${splitName.last}Example"""))
     },
-    examplePackageRef := {
+    examplePackageRef := Def.uncached {
       val organizationPackageRef =
         new ScalametaParser(Input.String(organization.value.replace('-', '_')))(
           (Test / exampleDialect).value
         )
           .parseRule(_.path(thisOK = false))
       val splitName = name.value.split('-')
-      splitName.view(0, splitName.length - 1).foldLeft(organizationPackageRef) {
+      splitName.init.foldLeft(organizationPackageRef) {
         (packageRef, subpackage) =>
           q"$packageRef.${Term.Name(subpackage)}"
       }
 
     },
     generateExample / fileInputs := (Compile / unmanagedSources / fileInputs).value,
-    generateExample := {
+    generateExample := Def.uncached {
       val outputFile =
         (Test / sourceManaged).value / "sbt-example-generated.scala"
       val logger = (generateExample / streams).value.log
       val compileDialect = (Compile / exampleDialect).value
       val testDialect = (Test / autoImport.exampleDialect).value
-      val content = generateExample.inputFiles.view.flatMap { file =>
+      val content = (generateExample / allInputFiles).value.view.flatMap { file =>
         val source =
           new ScalametaParser(Input.File(file))(compileDialect).parseSource()
         exampleStats(source, logger, testDialect)
@@ -508,7 +520,7 @@ object Example extends AutoPlugin {
     }
   ) ++
     (for (configuration <- Seq(Test, Compile)) yield {
-      configuration / exampleDialect := {
+      configuration / exampleDialect := Def.uncached {
         VersionNumber((configuration / scalaVersion).value).numbers match {
           case Seq(3L, _*) =>
             dialects.Scala3

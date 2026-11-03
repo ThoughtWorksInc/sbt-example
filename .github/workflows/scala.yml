@@ -17,6 +17,7 @@ jobs:
       matrix:
         scala:
           - 2.12.20
+          - 3.8.4
 
     steps:
       - uses: actions/checkout@v4

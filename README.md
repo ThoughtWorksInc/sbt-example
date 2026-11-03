@@ -26,4 +26,4 @@ The previous version of this project is the macro annotation [`@example`](https:
 
 ## Requirements
 
-* Sbt 1.x
+* Sbt 1.x or 2.x
