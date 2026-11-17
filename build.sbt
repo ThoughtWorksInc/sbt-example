@@ -1,7 +1,7 @@
 enablePlugins(SbtPlugin)
 
-scalaVersion := "2.12.20"
-crossScalaVersions := Seq("2.12.20", "3.9.0")
+scalaVersion := "2.12.21"
+crossScalaVersions := Seq("2.12.21", "3.9.0")
 
 scriptedLaunchOpts += "-Dplugin.version=" + version.value
 
