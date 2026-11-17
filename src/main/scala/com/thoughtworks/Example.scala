@@ -111,11 +111,14 @@ object Example extends AutoPlugin {
                     DocToken(DocToken.CodeBlock, None, Some(codeBlock)),
                     (codeAccumulator, trailingAccumulator, tagAccumulator)
                   ) =>
-                val Term.Block(stats) =
+                val stats =
                   new ScalametaParser(Input.String("{\n" + codeBlock + "\n}"))(
-                    testDialect
+                    using testDialect
                   )
-                    .parseStat()
+                    .parseStat() match {
+                      case Term.Block(stats) => stats
+                      case other => throw new MatchError(other)
+                    }
                 (stats ++: codeAccumulator, trailingAccumulator, tagAccumulator)
               case (
                     DocToken(
@@ -321,17 +324,23 @@ object Example extends AutoPlugin {
               leafTestTree(name)
             case va: Defn.Var
                 if va.pats.length == 1 && va.pats.head.isInstanceOf[Pat.Var] =>
-              val Seq(Pat.Var(name)) = va.pats
+              val name = va.pats match {
+                case Seq(Pat.Var(name)) => name
+                case other => throw new MatchError(other)
+              }
               leafTestTree(name)
             case macr: Defn.Macro =>
               leafTestTree(macr.name)
             case group: Defn.ExtensionGroup =>
-              val Some(name) =
+              val name =
                 group.paramss.collectFirst(Function.unlift(_.collectFirst {
                   case param
                       if !param.mods.exists(Set(Mod.Implicit, Mod.Using)) =>
                     param.name
-                }))
+                })) match {
+                  case Some(name) => name
+                  case other => throw new MatchError(other)
+                }
               defnTestTree(
                 name,
                 group.body match {
@@ -462,7 +471,7 @@ object Example extends AutoPlugin {
   }
   import autoImport._
 
-  override def globalSettings: Seq[Def.Setting[_]] = Seq(
+  override def globalSettings: Seq[Def.Setting[?]] = Seq(
     exampleSuperTypes := Def.uncached(
       List(
         init"_root_.org.scalatest.freespec.AnyFreeSpec",
@@ -471,7 +480,7 @@ object Example extends AutoPlugin {
     )
   )
 
-  override def projectSettings: Seq[Def.Setting[_]] = Seq(
+  override def projectSettings: Seq[Def.Setting[?]] = Seq(
     exampleClassName := Def.uncached {
       val splitName = name.value.split('-')
       Type.Name(NameEncoder.encode(raw"""${splitName.last}Example"""))
@@ -479,7 +488,7 @@ object Example extends AutoPlugin {
     examplePackageRef := Def.uncached {
       val organizationPackageRef =
         new ScalametaParser(Input.String(organization.value.replace('-', '_')))(
-          (Test / exampleDialect).value
+          using (Test / exampleDialect).value
         )
           .parseRule(_.path(thisOK = false))
       val splitName = name.value.split('-')
@@ -498,7 +507,7 @@ object Example extends AutoPlugin {
       val testDialect = (Test / autoImport.exampleDialect).value
       val content = (generateExample / allInputFiles).value.view.flatMap { file =>
         val source =
-          new ScalametaParser(Input.File(file))(compileDialect).parseSource()
+          new ScalametaParser(Input.File(file))(using compileDialect).parseSource()
         exampleStats(source, logger, testDialect)
       }.toList
       val generatedFileTree = q"""

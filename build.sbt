@@ -1,13 +1,16 @@
 enablePlugins(SbtPlugin)
 
+scalaVersion := "2.12.20"
+crossScalaVersions := Seq("2.12.20", "3.9.0")
+
 scriptedLaunchOpts += "-Dplugin.version=" + version.value
 
 ThisBuild / organization := "com.thoughtworks.example"
 
 ThisBuild / pluginCrossBuild / sbtVersion := {
   scalaBinaryVersion.value match {
-    case "2.12" => sbtVersion.value
-    case _      => "2.0.0"
+    case "2.12" => "1.13.1"
+    case _      => "2.1.0"
   }
 }
 
@@ -29,7 +32,7 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.20" % Provided // F
 
 scalacOptions ++= {
   if (scalaBinaryVersion.value == "2.12")
-    Seq("-Ypatmat-exhaust-depth", "off")
+    Seq("-Xsource:3", "-release:8", "-Ypatmat-exhaust-depth", "off")
   else
     Seq.empty
 }
