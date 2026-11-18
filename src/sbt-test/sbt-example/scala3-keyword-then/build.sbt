@@ -10,7 +10,11 @@ exampleSuperTypes := Def.uncached(
   exampleSuperTypes.value :+ init"_root_.org.scalatest.Inside"
 )
 
-scalaVersion := "3.2.1"
+scalaVersion := {
+  val javaVersion = sys.props("java.specification.version")
+  // Keep the original compiler coverage where it can read the JDK platform classes.
+  if (javaVersion == "1.8" || javaVersion.toInt < 21) "3.2.1" else "3.3.9"
+}
 
 TaskKey[Unit]("checkGenerated") := {
   val generated = (Test / sourceManaged).value / "sbt-example-generated.scala"
