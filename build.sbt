@@ -7,7 +7,7 @@ ThisBuild / organization := "com.thoughtworks.example"
 ThisBuild / pluginCrossBuild / sbtVersion := {
   scalaBinaryVersion.value match {
     case "2.12" => sbtVersion.value
-    case _      => "2.0.0"
+    case _      => "2.1.1"
   }
 }
 
